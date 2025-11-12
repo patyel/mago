@@ -63,12 +63,12 @@ export default function CalculatorScreen() {
           totalPerEntry: totalBet,
           description:
             entries === 1
-              ? "Meta em 1 tacada (alto risco)"
+              ? "Implacável"
               : entries === 2
-                ? "Meta em 2 entradas (risco moderado)"
+                ? "Visionário"
                 : entries === 5
-                  ? "Meta em 5 entradas (risco baixo)"
-                  : "Meta em 10 entradas (muito conservador)",
+                  ? "Conservador"
+                  : "Muito Conservador",
         });
       }
     });
