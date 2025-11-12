@@ -83,46 +83,27 @@ const analyzeAllDozenPatterns = (results: RouletteResult[]): AllPatternInfo[] =>
       last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.dozen as number));
 
     // Verifica se acabou de quebrar (tinha padrão mas o último número quebrou)
-    const lastNumber = results[results.length - 1];
-    const secondToLast = results.length >= 2 ? results[results.length - 2] : null;
-
-    // Pega últimos 5 não-zero (se existirem)
-    const last5NonZero = results
-      .slice(-12)
-      .filter((r) => r.dozen !== null)
-      .slice(-5);
-
-    // Quebra = o último NÃO está no padrão, mas os 4 anteriores estavam
+    // NOVA LÓGICA: Verifica se existia um padrão forte (4+) e o último número quebrou
     let justBroke = false;
     let countBeforeBreak = 0;
-    if (last5NonZero.length >= 5) {
-      const lastDozen = last5NonZero[4].dozen;
-      const previous4 = last5NonZero.slice(0, 4);
-      const previous4InPattern = previous4.every((r) => pair.includes(r.dozen as number));
-      const lastNotInPattern = lastDozen !== null && !pair.includes(lastDozen);
 
-      if (previous4InPattern && lastNotInPattern && previous4.length >= 4) {
-        justBroke = true;
-        // Conta quantas sequências tinha ANTES da quebra (do índice 4 pra trás)
-        for (let i = 3; i >= 0; i--) {
-          const dozen = last5NonZero[i].dozen;
-          if (dozen !== null && pair.includes(dozen)) {
-            countBeforeBreak++;
-          } else {
-            break;
-          }
-        }
-        // Continua contando pra trás se tiver mais números
-        const indexBefore5th = results.length - 6; // Índice do número antes dos últimos 5
-        for (let i = indexBefore5th; i >= 0; i--) {
-          const dozen = results[i].dozen;
-          if (dozen !== null && pair.includes(dozen)) {
-            countBeforeBreak++;
-          } else {
-            break;
-          }
-        }
+    // Primeiro, conta quantos do padrão existem ANTES do último número
+    const allExceptLast = results.slice(0, -1).filter((r) => r.dozen !== null);
+    let consecutiveFromEnd = 0;
+    for (let i = allExceptLast.length - 1; i >= 0; i--) {
+      if (pair.includes(allExceptLast[i].dozen as number)) {
+        consecutiveFromEnd++;
+      } else {
+        break;
       }
+    }
+
+    // Se tinha 4+ sequências E o último número quebrou
+    const lastResult = results[results.length - 1];
+    if (consecutiveFromEnd >= 4 && lastResult.dozen !== null && !pair.includes(lastResult.dozen)) {
+      justBroke = true;
+      countBeforeBreak = consecutiveFromEnd;
+      console.log(`🔴 QUEBRA DETECTADA em Dúzia ${name}: tinha ${consecutiveFromEnd}x, último ${lastResult.number} (${lastResult.dozen}ª dúzia) quebrou!`);
     }
 
     if (countFromEnd > 0 || justBroke) {
@@ -170,43 +151,27 @@ const analyzeAllColumnPatterns = (results: RouletteResult[]): AllPatternInfo[] =
       last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.column as number));
 
     // Verifica se acabou de quebrar (tinha padrão mas o último número quebrou)
-    // Pega últimos 5 não-zero (se existirem)
-    const last5NonZero = results
-      .slice(-12)
-      .filter((r) => r.column !== null)
-      .slice(-5);
-
-    // Quebra = o último NÃO está no padrão, mas os 4 anteriores estavam
+    // NOVA LÓGICA: Verifica se existia um padrão forte (4+) e o último número quebrou
     let justBroke = false;
     let countBeforeBreak = 0;
-    if (last5NonZero.length >= 5) {
-      const lastColumn = last5NonZero[4].column;
-      const previous4 = last5NonZero.slice(0, 4);
-      const previous4InPattern = previous4.every((r) => pair.includes(r.column as number));
-      const lastNotInPattern = lastColumn !== null && !pair.includes(lastColumn);
 
-      if (previous4InPattern && lastNotInPattern && previous4.length >= 4) {
-        justBroke = true;
-        // Conta quantas sequências tinha ANTES da quebra (do índice 4 pra trás)
-        for (let i = 3; i >= 0; i--) {
-          const column = last5NonZero[i].column;
-          if (column !== null && pair.includes(column)) {
-            countBeforeBreak++;
-          } else {
-            break;
-          }
-        }
-        // Continua contando pra trás se tiver mais números
-        const indexBefore5th = results.length - 6; // Índice do número antes dos últimos 5
-        for (let i = indexBefore5th; i >= 0; i--) {
-          const column = results[i].column;
-          if (column !== null && pair.includes(column)) {
-            countBeforeBreak++;
-          } else {
-            break;
-          }
-        }
+    // Primeiro, conta quantos do padrão existem ANTES do último número
+    const allExceptLast = results.slice(0, -1).filter((r) => r.column !== null);
+    let consecutiveFromEnd = 0;
+    for (let i = allExceptLast.length - 1; i >= 0; i--) {
+      if (pair.includes(allExceptLast[i].column as number)) {
+        consecutiveFromEnd++;
+      } else {
+        break;
       }
+    }
+
+    // Se tinha 4+ sequências E o último número quebrou
+    const lastResult = results[results.length - 1];
+    if (consecutiveFromEnd >= 4 && lastResult.column !== null && !pair.includes(lastResult.column)) {
+      justBroke = true;
+      countBeforeBreak = consecutiveFromEnd;
+      console.log(`🔴 QUEBRA DETECTADA em Coluna ${name}: tinha ${consecutiveFromEnd}x, último ${lastResult.number} (${lastResult.column}ª coluna) quebrou!`);
     }
 
     if (countFromEnd > 0 || justBroke) {
