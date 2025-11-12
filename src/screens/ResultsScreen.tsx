@@ -67,7 +67,12 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
                   <Ionicons name="home" size={24} color="#a855f7" />
                 </Pressable>
                 <Text className="text-white text-xl font-bold">Resultado</Text>
-                <View className="w-12" />
+                <Pressable
+                  onPress={() => navigation.navigate("Onboarding")}
+                  className="w-12 h-12 bg-slate-800 rounded-full items-center justify-center active:opacity-70"
+                >
+                  <Ionicons name="information-circle-outline" size={24} color="#a855f7" />
+                </Pressable>
               </View>
 
               {/* Score Card */}
