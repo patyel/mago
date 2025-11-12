@@ -1,4 +1,4 @@
-// Motor de análise de padrões de roleta
+// Motor de análise de padrões de roleta - VERSÃO ATUALIZADA
 import {
   RouletteResult,
   RouletteColor,
@@ -44,269 +44,248 @@ export const parseRouletteNumber = (num: number): RouletteResult => {
   };
 };
 
-// Detecta sequências de cores
-export const detectColorSequences = (results: RouletteResult[]): SequencePattern[] => {
-  const patterns: SequencePattern[] = [];
-  let currentColor: RouletteColor | null = null;
-  let count = 0;
-  let sequence: RouletteColor[] = [];
+// Verifica se os últimos N resultados seguem um padrão de cor
+const checkRecentColorPattern = (
+  results: RouletteResult[],
+  lastN: number = 4
+): { hasPattern: boolean; color: RouletteColor | null; count: number } => {
+  if (results.length < lastN) return { hasPattern: false, color: null, count: 0 };
 
-  for (const result of results) {
-    if (result.color === "green") continue; // Ignora o 0
+  const recent = results.slice(-lastN);
+  const nonGreenRecent = recent.filter((r) => r.color !== "green");
 
-    if (result.color === currentColor) {
-      count++;
-      sequence.push(result.color);
+  if (nonGreenRecent.length < lastN) return { hasPattern: false, color: null, count: 0 };
+
+  const firstColor = nonGreenRecent[0].color;
+  const allSameColor = nonGreenRecent.every((r) => r.color === firstColor);
+
+  // Conta quantos no total seguem esse padrão
+  let totalCount = 0;
+  for (let i = results.length - 1; i >= 0; i--) {
+    if (results[i].color === "green") continue;
+    if (results[i].color === firstColor) {
+      totalCount++;
     } else {
-      if (count >= 4) {
-        patterns.push({
-          type: "color",
-          values: [...sequence],
-          count,
-        });
-      }
-      currentColor = result.color;
-      count = 1;
-      sequence = [result.color];
+      break;
     }
   }
 
-  // Adiciona a última sequência se aplicável
-  if (count >= 4) {
-    patterns.push({
-      type: "color",
-      values: [...sequence],
-      count,
-    });
+  return {
+    hasPattern: allSameColor,
+    color: allSameColor ? firstColor : null,
+    count: totalCount,
+  };
+};
+
+// Verifica se os últimos N resultados seguem um padrão de dúzias
+const checkRecentDozenPattern = (
+  results: RouletteResult[],
+  lastN: number = 4
+): Array<{ hasPattern: boolean; dozens: DozenPosition[]; count: number }> => {
+  const patterns: Array<{ hasPattern: boolean; dozens: DozenPosition[]; count: number }> = [];
+
+  if (results.length < lastN) return patterns;
+
+  const recent = results.slice(-lastN);
+  const nonZeroRecent = recent.filter((r) => r.dozen !== null);
+
+  if (nonZeroRecent.length < lastN) return patterns;
+
+  // Verifica padrões: 1+2, 1+3, 2+3
+  const dozenPairs = [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+  ];
+
+  for (const pair of dozenPairs) {
+    const matchesPattern = nonZeroRecent.every((r) => pair.includes(r.dozen as number));
+
+    if (matchesPattern) {
+      // Conta quantos no total seguem esse padrão
+      let totalCount = 0;
+      for (let i = results.length - 1; i >= 0; i--) {
+        if (results[i].dozen === null) continue;
+        if (pair.includes(results[i].dozen as number)) {
+          totalCount++;
+        } else {
+          break;
+        }
+      }
+
+      patterns.push({
+        hasPattern: true,
+        dozens: pair as DozenPosition[],
+        count: totalCount,
+      });
+    }
   }
 
   return patterns;
 };
 
-// Detecta sequências de dúzias
-export const detectDozenSequences = (results: RouletteResult[]): SequencePattern[] => {
-  const patterns: SequencePattern[] = [];
+// Verifica se os últimos N resultados seguem um padrão de colunas
+const checkRecentColumnPattern = (
+  results: RouletteResult[],
+  lastN: number = 4
+): Array<{ hasPattern: boolean; columns: ColumnPosition[]; count: number }> => {
+  const patterns: Array<{ hasPattern: boolean; columns: ColumnPosition[]; count: number }> = [];
 
-  // Verifica se há sequência na 1ª e 2ª dúzia
-  let count12 = 0;
-  let sequence12: DozenPosition[] = [];
+  if (results.length < lastN) return patterns;
 
-  // Verifica se há sequência na 1ª e 3ª dúzia
-  let count13 = 0;
-  let sequence13: DozenPosition[] = [];
+  const recent = results.slice(-lastN);
+  const nonZeroRecent = recent.filter((r) => r.column !== null);
 
-  // Verifica se há sequência na 2ª e 3ª dúzia
-  let count23 = 0;
-  let sequence23: DozenPosition[] = [];
+  if (nonZeroRecent.length < lastN) return patterns;
 
-  for (const result of results) {
-    if (result.dozen === null) continue;
+  // Verifica padrões: 1+2, 1+3, 2+3
+  const columnPairs = [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+  ];
 
-    // Padrão 1ª e 2ª
-    if (result.dozen === 1 || result.dozen === 2) {
-      count12++;
-      sequence12.push(result.dozen);
-    } else {
-      if (count12 >= 4) {
-        patterns.push({
-          type: "dozen",
-          values: [...sequence12],
-          count: count12,
-        });
+  for (const pair of columnPairs) {
+    const matchesPattern = nonZeroRecent.every((r) => pair.includes(r.column as number));
+
+    if (matchesPattern) {
+      // Conta quantos no total seguem esse padrão
+      let totalCount = 0;
+      for (let i = results.length - 1; i >= 0; i--) {
+        if (results[i].column === null) continue;
+        if (pair.includes(results[i].column as number)) {
+          totalCount++;
+        } else {
+          break;
+        }
       }
-      count12 = 0;
-      sequence12 = [];
-    }
 
-    // Padrão 1ª e 3ª
-    if (result.dozen === 1 || result.dozen === 3) {
-      count13++;
-      sequence13.push(result.dozen);
-    } else {
-      if (count13 >= 4) {
-        patterns.push({
-          type: "dozen",
-          values: [...sequence13],
-          count: count13,
-        });
-      }
-      count13 = 0;
-      sequence13 = [];
-    }
-
-    // Padrão 2ª e 3ª
-    if (result.dozen === 2 || result.dozen === 3) {
-      count23++;
-      sequence23.push(result.dozen);
-    } else {
-      if (count23 >= 4) {
-        patterns.push({
-          type: "dozen",
-          values: [...sequence23],
-          count: count23,
-        });
-      }
-      count23 = 0;
-      sequence23 = [];
+      patterns.push({
+        hasPattern: true,
+        columns: pair as ColumnPosition[],
+        count: totalCount,
+      });
     }
   }
-
-  // Adiciona as últimas sequências
-  if (count12 >= 4) patterns.push({ type: "dozen", values: [...sequence12], count: count12 });
-  if (count13 >= 4) patterns.push({ type: "dozen", values: [...sequence13], count: count13 });
-  if (count23 >= 4) patterns.push({ type: "dozen", values: [...sequence23], count: count23 });
 
   return patterns;
 };
 
-// Detecta sequências de colunas
-export const detectColumnSequences = (results: RouletteResult[]): SequencePattern[] => {
-  const patterns: SequencePattern[] = [];
-
-  // Verifica se há sequência na 1ª e 2ª coluna
-  let count12 = 0;
-  let sequence12: ColumnPosition[] = [];
-
-  // Verifica se há sequência na 1ª e 3ª coluna
-  let count13 = 0;
-  let sequence13: ColumnPosition[] = [];
-
-  // Verifica se há sequência na 2ª e 3ª coluna
-  let count23 = 0;
-  let sequence23: ColumnPosition[] = [];
-
-  for (const result of results) {
-    if (result.column === null) continue;
-
-    // Padrão 1ª e 2ª
-    if (result.column === 1 || result.column === 2) {
-      count12++;
-      sequence12.push(result.column);
-    } else {
-      if (count12 >= 4) {
-        patterns.push({
-          type: "column",
-          values: [...sequence12],
-          count: count12,
-        });
-      }
-      count12 = 0;
-      sequence12 = [];
-    }
-
-    // Padrão 1ª e 3ª
-    if (result.column === 1 || result.column === 3) {
-      count13++;
-      sequence13.push(result.column);
-    } else {
-      if (count13 >= 4) {
-        patterns.push({
-          type: "column",
-          values: [...sequence13],
-          count: count13,
-        });
-      }
-      count13 = 0;
-      sequence13 = [];
-    }
-
-    // Padrão 2ª e 3ª
-    if (result.column === 2 || result.column === 3) {
-      count23++;
-      sequence23.push(result.column);
-    } else {
-      if (count23 >= 4) {
-        patterns.push({
-          type: "column",
-          values: [...sequence23],
-          count: count23,
-        });
-      }
-      count23 = 0;
-      sequence23 = [];
-    }
-  }
-
-  // Adiciona as últimas sequências
-  if (count12 >= 4) patterns.push({ type: "column", values: [...sequence12], count: count12 });
-  if (count13 >= 4) patterns.push({ type: "column", values: [...sequence13], count: count13 });
-  if (count23 >= 4) patterns.push({ type: "column", values: [...sequence23], count: count23 });
-
-  return patterns;
-};
-
-// Converte padrões em oportunidades de aposta
-export const generateOpportunities = (patterns: SequencePattern[]): RouletteOpportunity[] => {
-  const opportunities: RouletteOpportunity[] = [];
-
-  for (const pattern of patterns) {
-    let betOn: string[] = [];
-    let confidence: "ruim" | "bom" | "alavancar" = "ruim";
-
-    if (pattern.count >= 6 && pattern.count <= 20) {
-      confidence = "alavancar";
-    } else if (pattern.count >= 4) {
-      confidence = "bom";
-    }
-
-    if (pattern.type === "color") {
-      const color = pattern.values[pattern.values.length - 1] as RouletteColor;
-      betOn = [color === "red" ? "Vermelho" : "Preto"];
-    } else if (pattern.type === "dozen") {
-      const uniqueDozens = Array.from(new Set(pattern.values as DozenPosition[]));
-      betOn = uniqueDozens.map((d) => `${d}ª Dúzia`);
-    } else if (pattern.type === "column") {
-      const uniqueColumns = Array.from(new Set(pattern.values as ColumnPosition[]));
-      betOn = uniqueColumns.map((c) => `${c}ª Coluna`);
-    }
-
-    opportunities.push({
-      type: pattern.type,
-      betOn,
-      sequenceCount: pattern.count,
-      confidence,
-    });
-  }
-
-  return opportunities;
-};
-
-// Análise completa dos números detectados
+// Análise completa dos números detectados - NOVA LÓGICA
 export const analyzeRouletteResults = (
   numbers: number[],
   imageUri: string
 ): RouletteAnalysis => {
   const results = numbers.map(parseRouletteNumber);
 
-  // Detecta todos os padrões
-  const colorPatterns = detectColorSequences(results);
-  const dozenPatterns = detectDozenSequences(results);
-  const columnPatterns = detectColumnSequences(results);
+  const allPatterns: SequencePattern[] = [];
+  const opportunities: RouletteOpportunity[] = [];
 
-  const allPatterns = [...colorPatterns, ...dozenPatterns, ...columnPatterns];
+  // 1. Verifica padrão de COR nos últimos 4
+  const colorPattern = checkRecentColorPattern(results, 4);
+  if (colorPattern.hasPattern && colorPattern.color) {
+    const colorValues = Array(colorPattern.count).fill(colorPattern.color);
+    allPatterns.push({
+      type: "color",
+      values: colorValues,
+      count: colorPattern.count,
+    });
 
-  // Gera oportunidades
-  const opportunities = generateOpportunities(allPatterns);
+    let confidence: "ruim" | "bom" | "alavancar" = "ruim";
+    if (colorPattern.count >= 6 && colorPattern.count <= 20) {
+      confidence = "alavancar";
+    } else if (colorPattern.count >= 4) {
+      confidence = "bom";
+    }
 
-  // Determina score geral
-  let overallScore: "ruim" | "bom" | "alavancar" = "ruim";
-  const hasAlavanca = opportunities.some((o) => o.confidence === "alavancar");
-  const hasBom = opportunities.some((o) => o.confidence === "bom");
-
-  if (hasAlavanca) {
-    overallScore = "alavancar";
-  } else if (hasBom) {
-    overallScore = "bom";
+    opportunities.push({
+      type: "color",
+      betOn: [colorPattern.color === "red" ? "Vermelho" : "Preto"],
+      sequenceCount: colorPattern.count,
+      confidence,
+    });
   }
 
-  // Gera recomendação
+  // 2. Verifica padrões de DÚZIAS nos últimos 4
+  const dozenPatterns = checkRecentDozenPattern(results, 4);
+  for (const pattern of dozenPatterns) {
+    if (pattern.hasPattern) {
+      allPatterns.push({
+        type: "dozen",
+        values: pattern.dozens,
+        count: pattern.count,
+      });
+
+      let confidence: "ruim" | "bom" | "alavancar" = "ruim";
+      if (pattern.count >= 6 && pattern.count <= 20) {
+        confidence = "alavancar";
+      } else if (pattern.count >= 4) {
+        confidence = "bom";
+      }
+
+      opportunities.push({
+        type: "dozen",
+        betOn: pattern.dozens.map((d) => `${d}ª Dúzia`),
+        sequenceCount: pattern.count,
+        confidence,
+      });
+    }
+  }
+
+  // 3. Verifica padrões de COLUNAS nos últimos 4
+  const columnPatterns = checkRecentColumnPattern(results, 4);
+  for (const pattern of columnPatterns) {
+    if (pattern.hasPattern) {
+      allPatterns.push({
+        type: "column",
+        values: pattern.columns,
+        count: pattern.count,
+      });
+
+      let confidence: "ruim" | "bom" | "alavancar" = "ruim";
+      if (pattern.count >= 6 && pattern.count <= 20) {
+        confidence = "alavancar";
+      } else if (pattern.count >= 4) {
+        confidence = "bom";
+      }
+
+      opportunities.push({
+        type: "column",
+        betOn: pattern.columns.map((c) => `${c}ª Coluna`),
+        sequenceCount: pattern.count,
+        confidence,
+      });
+    }
+  }
+
+  // Determina score geral baseado na MÉDIA dos padrões
+  let overallScore: "ruim" | "bom" | "alavancar" = "ruim";
   let recommendation = "";
-  if (overallScore === "alavancar") {
-    recommendation = "Excelente momento! Múltiplas oportunidades de alavancagem detectadas. Entre com confiança!";
-  } else if (overallScore === "bom") {
-    recommendation = "Bom momento para entrar. Padrões favoráveis detectados.";
+
+  if (opportunities.length === 0) {
+    // Nenhum padrão encontrado nos últimos 4
+    overallScore = "ruim";
+    recommendation =
+      "Não entre agora! Os últimos 4 resultados não formam nenhum padrão válido. Aguarde pelo menos 4 resultados consecutivos no mesmo padrão.";
   } else {
-    recommendation = "Momento fraco. Aguarde por padrões mais fortes (4+ sequências).";
+    // Calcula a média dos counts
+    const totalCount = opportunities.reduce((sum, opp) => sum + opp.sequenceCount, 0);
+    const avgCount = totalCount / opportunities.length;
+
+    // Conta quantos são "alavancar"
+    const alavancaCount = opportunities.filter((o) => o.confidence === "alavancar").length;
+    const bomCount = opportunities.filter((o) => o.confidence === "bom").length;
+
+    if (avgCount >= 6 && avgCount <= 20) {
+      overallScore = "alavancar";
+      recommendation = `Momento EXCELENTE para alavancar! Encontrei ${opportunities.length} padrão(ns) forte(s) com média de ${Math.round(avgCount)} sequências. Os últimos 4 resultados confirmam o padrão!`;
+    } else if (avgCount >= 4 || bomCount > 0) {
+      overallScore = "bom";
+      recommendation = `Bom momento para entrar! Encontrei ${opportunities.length} padrão(ns) com média de ${Math.round(avgCount)} sequências. Os últimos 4 resultados confirmam o padrão.`;
+    } else {
+      overallScore = "ruim";
+      recommendation = `Padrão fraco (média ${Math.round(avgCount)}x). Aguarde mais resultados para formar um padrão mais forte.`;
+    }
   }
 
   return {
