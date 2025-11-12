@@ -9,6 +9,7 @@ import { useRouletteStore } from "../state/rouletteStore";
 import { useAccessCodeStore } from "../state/accessCodeStore";
 import { analyzeRouletteResults } from "../utils/rouletteAnalyzer";
 import { backendService } from "../services/backend";
+import { getOpenAIClient } from "../api/openai";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as FileSystem from "expo-file-system";
@@ -42,21 +43,81 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigation, route }) =>
     try {
       setIsAnalyzing(true);
 
+      // Verifica código com o backend
+      setStatus("Verificando código de acesso...");
+      const verificacao = await backendService.verificarCodigo(codigo!);
+
+      if (!verificacao.sucesso) {
+        throw new Error(verificacao.erro);
+      }
+
       // Lê a imagem como base64
       setStatus("Preparando imagem...");
       const base64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Envia para o backend
+      // Analisa com OpenAI local
       setStatus("Analisando números da roleta...");
-      const resultado = await backendService.analisarImagem(codigo!, base64);
+      const openai = getOpenAIClient();
 
-      if (!resultado.sucesso) {
-        throw new Error(resultado.erro);
+      const prompt = `Você é um especialista em analisar painéis de roleta. Analise esta imagem e extraia os números do painel EXATAMENTE da ESQUERDA para DIREITA (ou de CIMA para BAIXO).
+
+⚠️ SUPER IMPORTANTE - ORDEM DOS NÚMEROS:
+- Leia os números da ESQUERDA → DIREITA (igual ler um livro)
+- Se o painel for vertical, leia de CIMA → BAIXO
+- O PRIMEIRO número que você vê (mais à esquerda/topo) = MAIS ANTIGO
+- O ÚLTIMO número que você vê (mais à direita/embaixo) = MAIS RECENTE (última entrada)
+- Retorne os números NESSA ORDEM EXATA
+
+FORMATO DA RESPOSTA:
+- Apenas números separados por vírgula
+- Números devem estar entre 0 e 36
+- Sem texto adicional
+
+EXEMPLO VISUAL:
+Painel mostra: [5] [12] [23] [8] [19] [3] [27]
+              ↑                           ↑
+           ANTIGO                    MAIS RECENTE
+
+Sua resposta deve ser: 5,12,23,8,19,3,27
+
+Se não conseguir identificar claramente, responda: "ERRO: Não foi possível identificar os números"`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64}`,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 300,
+      });
+
+      const numbersText = response.choices[0].message.content?.trim() || "";
+
+      if (numbersText.includes("ERRO")) {
+        throw new Error("Não foi possível identificar os números da roleta na imagem");
       }
 
-      const numbers = resultado.numeros;
+      // Parse dos números
+      const numbers = numbersText
+        .split(",")
+        .map((n) => parseInt(n.trim()))
+        .filter((n) => !isNaN(n) && n >= 0 && n <= 36);
+
+      if (numbers.length < 4) {
+        throw new Error("Poucos números detectados. Tire uma foto mais clara do painel com pelo menos 8 números visíveis");
+      }
 
       console.log("📸 Números detectados pela IA:", numbers);
       console.log("🎯 Primeiro (antigo):", numbers[0]);
