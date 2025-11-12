@@ -97,7 +97,7 @@ const analyzeAllDozenPatterns = (results: RouletteResult[]): AllPatternInfo[] =>
 
     // Se o maior padrão foi >= 4, considera válido
     if (maxConsecutive >= 4) {
-      // Verifica se acabou de quebrar
+      // Verifica se acabou de quebrar AGORA (no último número)
       const allExceptLast = results.slice(0, -1).filter((r) => r.dozen !== null);
       let consecutiveFromEnd = 0;
       for (let i = allExceptLast.length - 1; i >= 0; i--) {
@@ -109,7 +109,16 @@ const analyzeAllDozenPatterns = (results: RouletteResult[]): AllPatternInfo[] =>
       }
 
       const lastResult = results[results.length - 1];
-      const justBroke = consecutiveFromEnd >= 4 && lastResult.dozen !== null && !pair.includes(lastResult.dozen);
+      // Só marca como "quebrou agora" se:
+      // 1. O último número NÃO está no padrão
+      // 2. Tinha pelo menos 4 sequências ANTES do último
+      // 3. O penúltimo número estava no padrão (quebrou no último mesmo, não antes)
+      const justBroke =
+        consecutiveFromEnd >= 4 &&
+        lastResult.dozen !== null &&
+        !pair.includes(lastResult.dozen) &&
+        allExceptLast.length > 0 &&
+        pair.includes(allExceptLast[allExceptLast.length - 1].dozen as number);
 
       allPatterns.push({
         type: "dozen",
@@ -169,7 +178,7 @@ const analyzeAllColumnPatterns = (results: RouletteResult[]): AllPatternInfo[] =
 
     // Se o maior padrão foi >= 4, considera válido
     if (maxConsecutive >= 4) {
-      // Verifica se acabou de quebrar
+      // Verifica se acabou de quebrar AGORA (no último número)
       const allExceptLast = results.slice(0, -1).filter((r) => r.column !== null);
       let consecutiveFromEnd = 0;
       for (let i = allExceptLast.length - 1; i >= 0; i--) {
@@ -181,7 +190,16 @@ const analyzeAllColumnPatterns = (results: RouletteResult[]): AllPatternInfo[] =
       }
 
       const lastResult = results[results.length - 1];
-      const justBroke = consecutiveFromEnd >= 4 && lastResult.column !== null && !pair.includes(lastResult.column);
+      // Só marca como "quebrou agora" se:
+      // 1. O último número NÃO está no padrão
+      // 2. Tinha pelo menos 4 sequências ANTES do último
+      // 3. O penúltimo número estava no padrão (quebrou no último mesmo, não antes)
+      const justBroke =
+        consecutiveFromEnd >= 4 &&
+        lastResult.column !== null &&
+        !pair.includes(lastResult.column) &&
+        allExceptLast.length > 0 &&
+        pair.includes(allExceptLast[allExceptLast.length - 1].column as number);
 
       allPatterns.push({
         type: "column",
