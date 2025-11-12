@@ -18,10 +18,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Inicializa OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Inicializa OpenAI apenas quando necessário
+const getOpenAI = () => {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY não configurada");
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+};
 
 // Funções auxiliares
 const loadUsers = () => {
@@ -135,6 +140,7 @@ app.post("/api/analisar", async (req, res) => {
     }
 
     // Chama OpenAI para analisar a imagem
+    const openai = getOpenAI();
     const prompt = `Você é um especialista em analisar painéis de roleta. Analise esta imagem e extraia os números do painel EXATAMENTE da ESQUERDA para DIREITA (ou de CIMA para BAIXO).
 
 ⚠️ SUPER IMPORTANTE - ORDEM DOS NÚMEROS:
