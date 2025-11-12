@@ -106,7 +106,7 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
                   return (
                     <Pressable
                       key={analysis.id}
-                      onPress={() => navigation.navigate("Results", { analysis })}
+                      onPress={() => navigation.navigate("Results", { analysis, fromHistory: true })}
                       className="bg-slate-800 rounded-2xl overflow-hidden active:opacity-80"
                     >
                       <View className="flex-row">

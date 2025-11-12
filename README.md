@@ -176,7 +176,13 @@ src/
 ├── state/            # Gerenciamento de estado
 │   ├── rouletteStore.ts        # Store de análises
 │   ├── accessCodeStore.ts      # Store de autenticação
-│   └── bankrollStore.ts        # Store de banca
+│   ├── bankrollStore.ts        # Store de banca
+│   ├── statsStore.ts           # Store de gamificação e conquistas
+│   └── settingsStore.ts        # Store de configurações e notificações
+│
+├── components/       # Componentes reutilizáveis
+│   ├── XPModal.tsx             # Modal de XP ganho
+│   └── AchievementModal.tsx    # Modal de conquista desbloqueada
 │
 ├── utils/            # Utilitários
 │   ├── rouletteAnalyzer.ts   # Motor de análise de padrões
@@ -276,6 +282,28 @@ src/
 - O número mais à direita/embaixo é o MAIS RECENTE
 - Use a calculadora para planejar suas apostas ANTES de entrar
 - Registre TODOS os resultados na aba Banca para ter estatísticas precisas
+
+## 🔧 Últimas Melhorias (v2.1)
+
+### ✨ Gamificação Turbinada
+- **Card de XP gigante** na HomeScreen com barra de progresso
+- **Celebrações automáticas** após cada análise (+10 XP)
+- **Modal de conquista** quando desbloqueia achievements
+- **Meta de dobrar banca** com progresso visual
+- **Conquistas recentes** e próxima conquista em destaque
+- **Mensagens motivacionais** personalizadas por nível
+
+### 🐛 Bugs Corrigidos
+- **Crash no histórico**: Corrigido XP duplicado ao clicar em análises antigas
+- **Header apertado**: Melhorado espaçamento dos botões Info/Histórico/Sair
+- **Ícones otimizados**: Tamanhos reduzidos para melhor visualização
+
+### 🎨 Melhorias Visuais
+- Bordas mais grossas (4px) em elementos importantes
+- Cores mais vibrantes e contrastantes
+- Badges maiores (20x20) em conquistas
+- Textos em negrito para maior impacto
+- Feedback visual em todas as ações
 
 ## 🔐 Variáveis de Ambiente
 

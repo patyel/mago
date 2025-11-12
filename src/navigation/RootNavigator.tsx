@@ -21,7 +21,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   Camera: undefined;
   Analysis: { imageUri: string };
-  Results: { analysis: RouletteAnalysis };
+  Results: { analysis: RouletteAnalysis; fromHistory?: boolean };
   History: undefined;
   Stats: undefined;
   Achievements: undefined;

@@ -18,7 +18,7 @@ type ResultsScreenProps = {
 };
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
-  const { analysis } = route.params;
+  const { analysis, fromHistory } = route.params;
   const addAnalysis = useStatsStore((s) => s.addAnalysis);
   const achievements = useStatsStore((s) => s.achievements);
 
@@ -28,8 +28,11 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
   const [unlockedAchievement, setUnlockedAchievement] = useState<any>(null);
   const [previousAchievementCount, setPreviousAchievementCount] = useState(0);
 
-  // Adiciona análise automaticamente ao entrar na tela
+  // Adiciona análise automaticamente ao entrar na tela (APENAS SE NÃO FOR DO HISTÓRICO)
   useEffect(() => {
+    // Se veio do histórico, não adiciona análise nem mostra XP
+    if (fromHistory) return;
+
     // Salva quantidade de conquistas antes
     const unlockedBefore = achievements.filter(a => a.unlocked).length;
     setPreviousAchievementCount(unlockedBefore);
@@ -47,8 +50,10 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
     }, 500);
   }, []);
 
-  // Verifica se desbloqueou conquista
+  // Verifica se desbloqueou conquista (APENAS SE NÃO FOR DO HISTÓRICO)
   useEffect(() => {
+    if (fromHistory) return;
+
     const unlockedNow = achievements.filter(a => a.unlocked).length;
     if (unlockedNow > previousAchievementCount) {
       // Nova conquista desbloqueada!
