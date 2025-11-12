@@ -35,7 +35,7 @@ export default function BankrollScreen() {
   const [initialAmount, setInitialAmount] = useState("");
   const [profitAmount, setProfitAmount] = useState("");
   const [isProfit, setIsProfit] = useState(true); // true = lucro, false = perda
-  const [selectedLive, setSelectedLive] = useState<"11h" | "15h" | "19h">("11h");
+  const [selectedLive, setSelectedLive] = useState<"11h" | "15h" | "19h" | "Sozinho">("11h");
   const [showAddResult, setShowAddResult] = useState(false);
   const [showEditBankroll, setShowEditBankroll] = useState(false);
   const [editBankrollAmount, setEditBankrollAmount] = useState("");
@@ -296,7 +296,9 @@ export default function BankrollScreen() {
                                       ? "bg-blue-500/20"
                                       : live.time === "15h"
                                         ? "bg-purple-500/20"
-                                        : "bg-amber-500/20"
+                                        : live.time === "19h"
+                                          ? "bg-amber-500/20"
+                                          : "bg-slate-500/20"
                                   }`}
                                 >
                                   <Text
@@ -305,7 +307,9 @@ export default function BankrollScreen() {
                                         ? "text-blue-400"
                                         : live.time === "15h"
                                           ? "text-purple-400"
-                                          : "text-amber-400"
+                                          : live.time === "19h"
+                                            ? "text-amber-400"
+                                            : "text-slate-300"
                                     }`}
                                   >
                                     {live.time}
@@ -408,6 +412,17 @@ export default function BankrollScreen() {
                     }`}
                   >
                     <Text className="text-white font-bold text-sm">19h</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setSelectedLive("Sozinho")}
+                    className={`flex-1 py-2 rounded-xl items-center border-2 ${
+                      selectedLive === "Sozinho"
+                        ? "bg-slate-400 border-slate-300"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Text className="text-white font-bold text-xs">Sozinho</Text>
                   </Pressable>
                 </View>
 

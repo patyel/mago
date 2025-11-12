@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface LiveResult {
-  time: "11h" | "15h" | "19h";
+  time: "11h" | "15h" | "19h" | "Sozinho";
   profit: number;
 }
 
@@ -22,7 +22,7 @@ interface BankrollStore {
 
   // Actions
   setInitialBankroll: (amount: number) => void;
-  addLiveResult: (time: "11h" | "15h" | "19h", profit: number) => void;
+  addLiveResult: (time: "11h" | "15h" | "19h" | "Sozinho", profit: number) => void;
   getDailyResults: (days: number) => DailyResult[];
   getTotalProfit: () => number;
 }

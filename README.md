@@ -35,6 +35,7 @@ O app identifica sequências em:
 ### 💰 Gerenciamento de Banca
 - **Configure sua banca inicial**: Defina o valor da sua banca
 - **Registro diário**: Adicione lucros ou perdas do dia
+- **4 opções de registro**: Lives (11h, 15h, 19h) ou Sozinho (fora das lives)
 - **Gráfico de evolução**: Visualize os últimos 7 dias
 - **Histórico completo**: Acompanhe os últimos 30 dias
 - **Estatísticas em tempo real**: Veja lucro total e variação percentual
@@ -215,6 +216,8 @@ src/
 #### 💰 Aba Banca
 1. **Configure banca inicial**: Informe o valor da sua banca
 2. **Adicione resultados diários**: Registre lucros (+) ou perdas (-)
+   - **Lives**: 11h, 15h ou 19h (se jogou nas lives)
+   - **Sozinho**: Se jogou fora das lives por conta própria
 3. **Visualize evolução**: Gráfico dos últimos 7 dias
 4. **Acompanhe histórico**: Veja os últimos 30 dias de resultados
 
@@ -245,6 +248,10 @@ O app requer:
 - Histórico limitado: Últimas 50 análises
 
 ## 🎯 Melhorias Recentes
+
+### 💰 Melhorias na Banca (v4.3)
+- **Opção "Sozinho"**: Agora você pode registrar lucros/perdas quando joga sozinho fora das lives (11h, 15h, 19h)
+- **Cores diferenciadas**: Cada opção tem sua cor (Azul=11h, Roxo=15h, Amarelo=19h, Cinza=Sozinho)
 
 ### 🔧 Melhorias de UX (v4.2)
 - **Botão de Sair**: Adicionado botão vermelho "Sair" no header da tela principal para deslogar e voltar para tela de código
