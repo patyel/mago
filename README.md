@@ -25,6 +25,25 @@ Este app agora possui um **sistema completo de backend com códigos de acesso** 
 - Análise matemática de padrões em tempo real
 - **Simples, rápido e preciso!**
 
+### 🎮 Sistema de Gamificação
+- **Níveis e XP**: Ganhe experiência a cada análise e resultado registrado
+- **7 Conquistas**: Desbloqueie achievements por marcos importantes
+- **Badges**: Aprendiz do Mago, Mago Experiente, Mestre dos Padrões, Mago Supremo e mais
+- **Sequência de Uso**: Mantenha uma streak de dias consecutivos
+
+### 📊 Estatísticas Avançadas
+- **Taxa de Acerto (Win Rate)**: Porcentagem de acerto das suas entradas
+- **Melhor Horário**: Descubra em qual live você mais lucra
+- **Performance Semanal**: Acompanhe dias lucrativos e lucro total
+- **Histórico Completo**: Todas as análises com fotos salvas
+- **Análise de Padrões**: Entenda quais estratégias funcionam melhor
+
+### 🔔 Sistema de Alertas e Notificações
+- **Lembretes de Live**: Notificação nos horários das lives (11h, 15h, 19h)
+- **Alerta de Banca**: Aviso quando banca cair X% (configurável)
+- **Stop Loss**: Limite de perda diária com bloqueio automático
+- **Meta Diária**: Notificação quando atingir sua meta
+
 ### 📊 Detecção de Padrões
 O app identifica sequências em:
 - **Dúzias**: 1ª (1-12), 2ª (13-24), 3ª (25-36)
@@ -248,6 +267,19 @@ O app requer:
 - Histórico limitado: Últimas 50 análises
 
 ## 🎯 Melhorias Recentes
+
+### 🎮 Sistema de Gamificação e Stats Avançadas (v5.0)
+- **Níveis e XP**: Sistema de progressão com níveis e experiência
+- **Conquistas**: 7 conquistas desbloqueáveis (Primeira Análise, 10 análises, 50 análises, 100 análises, 7 dias seguidos, Semana lucrativa, 70% win rate)
+- **Taxa de Acerto**: Acompanhe seu win rate em tempo real
+- **Melhor Horário**: Descubra qual live você mais lucra (11h, 15h, 19h ou Sozinho)
+- **Performance Semanal**: Veja dias lucrativos e lucro dos últimos 7 dias
+- **Sequência de Uso**: Contador de dias consecutivos usando o app
+- **Alertas de Banca**: Notificação quando banca cair X%
+- **Stop Loss**: Configure limite de perda diária
+- **Lembretes de Live**: Notificações para registrar resultados
+- **Tela de Estatísticas**: Nova tela completa com todos os dados
+- **Tela de Conquistas**: Visualize e desbloqueie achievements
 
 ### 💰 Melhorias na Banca (v4.3)
 - **Opção "Sozinho"**: Agora você pode registrar lucros/perdas quando joga sozinho fora das lives (11h, 15h, 19h)

@@ -11,6 +11,8 @@ import ImagePickerScreen from "../screens/ImagePickerScreen";
 import AnalysisScreen from "../screens/AnalysisScreen";
 import ResultsScreen from "../screens/ResultsScreen";
 import HistoryScreen from "../screens/HistoryScreen";
+import StatsScreen from "../screens/StatsScreen";
+import AchievementsScreen from "../screens/AchievementsScreen";
 import { MainTabs } from "./MainTabs";
 
 export type RootStackParamList = {
@@ -21,6 +23,8 @@ export type RootStackParamList = {
   Analysis: { imageUri: string };
   Results: { analysis: RouletteAnalysis };
   History: undefined;
+  Stats: undefined;
+  Achievements: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -58,6 +62,8 @@ export const RootNavigator = () => {
         options={{ animation: "slide_from_bottom" }}
       />
       <Stack.Screen name="History" component={HistoryScreen} />
+      <Stack.Screen name="Stats" component={StatsScreen} />
+      <Stack.Screen name="Achievements" component={AchievementsScreen} />
     </Stack.Navigator>
   );
 };

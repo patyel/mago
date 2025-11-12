@@ -127,9 +127,18 @@ const HomeScreen = () => {
 
             {/* Stats Cards */}
             <View className="mb-8">
-              <Text className="text-white text-xl font-bold mb-4">
-                📊 Suas Estatísticas
-              </Text>
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-white text-xl font-bold">
+                  📊 Suas Estatísticas
+                </Text>
+                <Pressable
+                  onPress={() => navigation.navigate("Stats")}
+                  className="bg-purple-600 px-4 py-2 rounded-xl active:opacity-80 flex-row items-center"
+                >
+                  <Ionicons name="analytics" size={16} color="white" style={{ marginRight: 6 }} />
+                  <Text className="text-white font-bold text-sm">Ver Mais</Text>
+                </Pressable>
+              </View>
               <View className="flex-row justify-between">
                 <View className="flex-1 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 mr-2 border border-slate-700">
                   <View className="w-10 h-10 bg-blue-500 rounded-xl items-center justify-center mb-3">
