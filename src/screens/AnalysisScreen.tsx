@@ -101,9 +101,17 @@ Se não conseguir identificar claramente, responda: "ERRO: Não foi possível id
       console.log("🎯 Primeiro (antigo):", numbers[0]);
       console.log("🎯 Último (RECENTE):", numbers[numbers.length - 1]);
 
+      // INVERTE a ordem porque a IA está lendo ao contrário
+      // O primeiro número na lista é na verdade o MAIS RECENTE
+      const numbersReversed = [...numbers].reverse();
+
+      console.log("🔄 Números INVERTIDOS (ordem correta):", numbersReversed);
+      console.log("✅ Agora primeiro (antigo):", numbersReversed[0]);
+      console.log("✅ Agora último (RECENTE):", numbersReversed[numbersReversed.length - 1]);
+
       // Analisa os padrões
       setStatus("Analisando padrões e sequências...");
-      const analysis = analyzeRouletteResults(numbers, imageUri);
+      const analysis = analyzeRouletteResults(numbersReversed, imageUri);
 
       // Salva e navega
       setCurrentAnalysis(analysis);
