@@ -62,29 +62,71 @@ const analyzeAllDozenPatterns = (results: RouletteResult[]): AllPatternInfo[] =>
     { pair: [2, 3], name: "2ª + 3ª" },
   ];
 
-  // IMPORTANTE: Analisa apenas os últimos 10 números (mais recentes)
-  const recentResults = results.slice(-10);
-
   for (const { pair, name } of dozenPairs) {
     // Conta sequência do FINAL pra trás (mais recente)
     let countFromEnd = 0;
-    for (let i = recentResults.length - 1; i >= 0; i--) {
-      if (recentResults[i].dozen === null) continue;
-      if (pair.includes(recentResults[i].dozen as number)) {
+    for (let i = results.length - 1; i >= 0; i--) {
+      if (results[i].dozen === null) continue;
+      if (pair.includes(results[i].dozen as number)) {
         countFromEnd++;
       } else {
         break;
       }
     }
 
-    // Só adiciona se tem pelo menos 4 sequências consecutivas DO FINAL
-    if (countFromEnd >= 4) {
+    // Verifica se os últimos 4 estão no padrão (padrão ativo AGORA)
+    const last4NonZero = results
+      .slice(-10)
+      .filter((r) => r.dozen !== null)
+      .slice(-4);
+    const isActive =
+      last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.dozen as number));
+
+    // NOVA LÓGICA: Busca o MAIOR padrão consecutivo em toda a sequência
+    let maxConsecutive = 0;
+    let currentConsecutive = 0;
+    for (const result of results) {
+      if (result.dozen === null) continue;
+      if (pair.includes(result.dozen)) {
+        currentConsecutive++;
+        maxConsecutive = Math.max(maxConsecutive, currentConsecutive);
+      } else {
+        currentConsecutive = 0;
+      }
+    }
+
+    // Se o maior padrão foi >= 4, considera válido
+    if (maxConsecutive >= 4) {
+      // Verifica se acabou de quebrar AGORA (no último número)
+      const allExceptLast = results.slice(0, -1).filter((r) => r.dozen !== null);
+      let consecutiveFromEnd = 0;
+      for (let i = allExceptLast.length - 1; i >= 0; i--) {
+        if (pair.includes(allExceptLast[i].dozen as number)) {
+          consecutiveFromEnd++;
+        } else {
+          break;
+        }
+      }
+
+      const lastResult = results[results.length - 1];
+      // Só marca como "quebrou agora" se:
+      // 1. O último número NÃO está no padrão
+      // 2. Tinha pelo menos 4 sequências ANTES do último
+      // 3. O penúltimo número estava no padrão (quebrou no último mesmo, não antes)
+      const justBroke =
+        consecutiveFromEnd >= 4 &&
+        lastResult.dozen !== null &&
+        !pair.includes(lastResult.dozen) &&
+        allExceptLast.length > 0 &&
+        pair.includes(allExceptLast[allExceptLast.length - 1].dozen as number);
+
       allPatterns.push({
         type: "dozen",
         positions: name,
-        count: countFromEnd,
-        isActive: true,
-        justBroke: false,
+        count: maxConsecutive, // Usa o MAIOR padrão encontrado
+        isActive,
+        justBroke,
+        countBeforeBreak: justBroke ? consecutiveFromEnd : undefined,
       });
     }
   }
@@ -101,29 +143,71 @@ const analyzeAllColumnPatterns = (results: RouletteResult[]): AllPatternInfo[] =
     { pair: [2, 3], name: "2ª + 3ª" },
   ];
 
-  // IMPORTANTE: Analisa apenas os últimos 10 números (mais recentes)
-  const recentResults = results.slice(-10);
-
   for (const { pair, name } of columnPairs) {
     // Conta sequência do FINAL pra trás (mais recente)
     let countFromEnd = 0;
-    for (let i = recentResults.length - 1; i >= 0; i--) {
-      if (recentResults[i].column === null) continue;
-      if (pair.includes(recentResults[i].column as number)) {
+    for (let i = results.length - 1; i >= 0; i--) {
+      if (results[i].column === null) continue;
+      if (pair.includes(results[i].column as number)) {
         countFromEnd++;
       } else {
         break;
       }
     }
 
-    // Só adiciona se tem pelo menos 4 sequências consecutivas DO FINAL
-    if (countFromEnd >= 4) {
+    // Verifica se os últimos 4 estão no padrão (padrão ativo AGORA)
+    const last4NonZero = results
+      .slice(-10)
+      .filter((r) => r.column !== null)
+      .slice(-4);
+    const isActive =
+      last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.column as number));
+
+    // NOVA LÓGICA: Busca o MAIOR padrão consecutivo em toda a sequência
+    let maxConsecutive = 0;
+    let currentConsecutive = 0;
+    for (const result of results) {
+      if (result.column === null) continue;
+      if (pair.includes(result.column)) {
+        currentConsecutive++;
+        maxConsecutive = Math.max(maxConsecutive, currentConsecutive);
+      } else {
+        currentConsecutive = 0;
+      }
+    }
+
+    // Se o maior padrão foi >= 4, considera válido
+    if (maxConsecutive >= 4) {
+      // Verifica se acabou de quebrar AGORA (no último número)
+      const allExceptLast = results.slice(0, -1).filter((r) => r.column !== null);
+      let consecutiveFromEnd = 0;
+      for (let i = allExceptLast.length - 1; i >= 0; i--) {
+        if (pair.includes(allExceptLast[i].column as number)) {
+          consecutiveFromEnd++;
+        } else {
+          break;
+        }
+      }
+
+      const lastResult = results[results.length - 1];
+      // Só marca como "quebrou agora" se:
+      // 1. O último número NÃO está no padrão
+      // 2. Tinha pelo menos 4 sequências ANTES do último
+      // 3. O penúltimo número estava no padrão (quebrou no último mesmo, não antes)
+      const justBroke =
+        consecutiveFromEnd >= 4 &&
+        lastResult.column !== null &&
+        !pair.includes(lastResult.column) &&
+        allExceptLast.length > 0 &&
+        pair.includes(allExceptLast[allExceptLast.length - 1].column as number);
+
       allPatterns.push({
         type: "column",
         positions: name,
-        count: countFromEnd,
-        isActive: true,
-        justBroke: false,
+        count: maxConsecutive, // Usa o MAIOR padrão encontrado
+        isActive,
+        justBroke,
+        countBeforeBreak: justBroke ? consecutiveFromEnd : undefined,
       });
     }
   }
@@ -253,23 +337,113 @@ export const analyzeRouletteResults = (
   let overallScore: "ruim" | "bom" | "alavancar" = "ruim";
   let recommendation = "";
 
-  // Monta relatório simples dos padrões ativos
+  // Monta relatório de TODOS os padrões
   const allPatternsReport: string[] = [];
+  let hasRecentBreak = false;
+  const brokenPatterns: Array<{ name: string; countBefore: number }> = [];
 
   // Adiciona padrões de dúzias
   for (const p of allDozenPatterns) {
-    allPatternsReport.push(`Dúzia ${p.positions}: ${p.count}x ✅ ATIVO`);
+    let status = "";
+    if (p.justBroke) {
+      status = "🔴 QUEBROU AGORA!";
+      hasRecentBreak = true;
+      brokenPatterns.push({
+        name: `Dúzia ${p.positions}`,
+        countBefore: p.countBeforeBreak || 0
+      });
+    } else if (p.isActive && p.count >= 4) {
+      status = "✅ ATIVO";
+    } else if (p.count < 4) {
+      status = "⏳ Fraco";
+    } else {
+      status = "❌ Quebrou";
+    }
+    allPatternsReport.push(`Dúzia ${p.positions}: ${p.count}x ${status}`);
   }
 
   // Adiciona padrões de colunas
   for (const p of allColumnPatterns) {
-    allPatternsReport.push(`Coluna ${p.positions}: ${p.count}x ✅ ATIVO`);
+    let status = "";
+    if (p.justBroke) {
+      status = "🔴 QUEBROU AGORA!";
+      hasRecentBreak = true;
+      brokenPatterns.push({
+        name: `Coluna ${p.positions}`,
+        countBefore: p.countBeforeBreak || 0
+      });
+    } else if (p.isActive && p.count >= 4) {
+      status = "✅ ATIVO";
+    } else if (p.count < 4) {
+      status = "⏳ Fraco";
+    } else {
+      status = "❌ Quebrou";
+    }
+    allPatternsReport.push(`Coluna ${p.positions}: ${p.count}x ${status}`);
+  }
+
+  // Se teve quebra recente, mas TEM padrões ativos, mostra ambos!
+  if (hasRecentBreak && opportunities.length > 0) {
+    // Tem padrões ativos E padrões que quebraram
+    const breakDetailsList = brokenPatterns
+      .map((bp) => `• ${bp.name}: tinha ${bp.countBefore}x sequências e quebrou agora!`)
+      .join("\n");
+
+    const totalCount = opportunities.reduce((sum, opp) => sum + opp.sequenceCount, 0);
+    const avgCount = totalCount / opportunities.length;
+
+    if (avgCount >= 6 && avgCount <= 20) {
+      overallScore = "alavancar";
+    } else if (avgCount >= 4) {
+      overallScore = "bom";
+    }
+
+    recommendation = `🎯 ENTRE NOS PADRÕES ATIVOS!\n\n✅ ENTRADAS VÁLIDAS:\n${opportunities.map((o) => `• ${o.betOn.join(" + ")}: ${o.sequenceCount}x ${o.confidence === "alavancar" ? "🚀 ALAVANCAR" : "👍 BOM"}`).join("\n")}\n\n⚠️ ATENÇÃO - PADRÃO QUEBROU:\n${breakDetailsList}\n\nEspere para ver se este padrão volta ou continue com as entradas ativas acima.\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
+
+    return {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      imageUri,
+      detectedNumbers: results,
+      patterns: allPatterns,
+      opportunities, // Retorna as oportunidades ATIVAS
+      overallScore,
+      recommendation,
+    };
+  }
+
+  // Se teve quebra recente E NÃO tem padrões ativos, só mostra a quebra
+  if (hasRecentBreak) {
+    overallScore = "ruim";
+
+    const breakDetails = brokenPatterns
+      .map((bp) => `${bp.name} (tinha ${bp.countBefore}x sequências)`)
+      .join(" e ");
+
+    recommendation = `⚠️ PADRÃO ACABOU DE QUEBRAR!\n\n🔴 O PADRÃO QUE ESTAVA ATIVO:\n${breakDetails}\n\nO último número quebrou esse padrão!\n\n⏳ AGUARDE! Espere para ver:\n• Se o padrão antigo volta (${brokenPatterns.map(bp => bp.name).join(" ou ")})\n• Ou se um novo padrão se forma\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
+
+    return {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      imageUri,
+      detectedNumbers: results,
+      patterns: allPatterns,
+      opportunities: [],
+      overallScore,
+      recommendation,
+    };
   }
 
   if (opportunities.length === 0) {
     // Nenhum padrão ATIVO com 4+
     overallScore = "ruim";
-    recommendation = "❌ NÃO ENTRE AGORA!\n\nNenhum padrão ativo com 4+ sequências consecutivas nos últimos números.";
+
+    if (allPatternsReport.length > 0) {
+      recommendation = `❌ NÃO ENTRE AGORA!\n\nTODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}\n\nNenhum padrão está ativo com 4+ sequências nos últimos resultados.`;
+    } else {
+      recommendation =
+        "❌ Sem padrão válido! Os últimos resultados não formam nenhum padrão de dúzias ou colunas.";
+    }
   } else {
     // Tem padrões ativos
     const totalCount = opportunities.reduce((sum, opp) => sum + opp.sequenceCount, 0);
@@ -277,13 +451,13 @@ export const analyzeRouletteResults = (
 
     if (avgCount >= 6 && avgCount <= 20) {
       overallScore = "alavancar";
-      recommendation = `🚀 ALAVANCAR AGORA!\n\nENTRE EM:\n${opportunities.map((o) => `• ${o.betOn.join(" + ")}: ${o.sequenceCount}x`).join("\n")}\n\n📊 Padrões ativos encontrados:\n${allPatternsReport.join("\n")}`;
+      recommendation = `🚀 ALAVANCAR AGORA!\n\nENTRE EM:\n${opportunities.map((o) => `${o.betOn.join(" + ")}: ${o.sequenceCount}x`).join("\n")}\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
     } else if (avgCount >= 4) {
       overallScore = "bom";
-      recommendation = `👍 BOM MOMENTO!\n\nENTRE EM:\n${opportunities.map((o) => `• ${o.betOn.join(" + ")}: ${o.sequenceCount}x`).join("\n")}\n\n📊 Padrões ativos encontrados:\n${allPatternsReport.join("\n")}`;
+      recommendation = `👍 BOM MOMENTO!\n\nENTRE EM:\n${opportunities.map((o) => `${o.betOn.join(" + ")}: ${o.sequenceCount}x`).join("\n")}\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
     } else {
       overallScore = "ruim";
-      recommendation = "⚠️ Padrão fraco! Aguarde padrão mais forte.";
+      recommendation = `⚠️ Padrão fraco!\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
     }
   }
 
