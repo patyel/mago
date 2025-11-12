@@ -108,9 +108,13 @@ Se não conseguir identificar, responda: ERRO`;
 
       console.log("📸 Números detectados pela IA:", numbers);
 
+      // INVERTE porque a IA lê da direita pra esquerda
+      const numbersReversed = [...numbers].reverse();
+      console.log("🔄 Números invertidos (ordem correta):", numbersReversed);
+
       // Analisa os padrões
       setStatus("Analisando padrões e sequências...");
-      const analysis = analyzeRouletteResults(numbers, imageUri);
+      const analysis = analyzeRouletteResults(numbersReversed, imageUri);
 
       // Salva e navega
       setCurrentAnalysis(analysis);
