@@ -364,11 +364,40 @@ export const analyzeRouletteResults = (
     allPatternsReport.push(`Coluna ${p.positions}: ${p.count}x ${status}`);
   }
 
-  // Se teve quebra recente, NÃO ENTRAR!
+  // Se teve quebra recente, mas TEM padrões ativos, mostra ambos!
+  if (hasRecentBreak && opportunities.length > 0) {
+    // Tem padrões ativos E padrões que quebraram
+    const breakDetails = brokenPatterns
+      .map((bp) => `${bp.name} (tinha ${bp.countBefore}x sequências)`)
+      .join(" e ");
+
+    const totalCount = opportunities.reduce((sum, opp) => sum + opp.sequenceCount, 0);
+    const avgCount = totalCount / opportunities.length;
+
+    if (avgCount >= 6 && avgCount <= 20) {
+      overallScore = "alavancar";
+    } else if (avgCount >= 4) {
+      overallScore = "bom";
+    }
+
+    recommendation = `🎯 ENTRE AGORA!\n\n✅ PADRÕES ATIVOS:\n${opportunities.map((o) => `${o.betOn.join(" + ")}: ${o.sequenceCount}x`).join("\n")}\n\n⚠️ ATENÇÃO: Outro padrão quebrou:\n${breakDetails}\n\nO último número quebrou esse padrão. Aguarde se ele volta ou entre nos padrões ativos acima.\n\n📊 TODOS OS PADRÕES NA FOTO:\n${allPatternsReport.join("\n")}`;
+
+    return {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      imageUri,
+      detectedNumbers: results,
+      patterns: allPatterns,
+      opportunities, // Retorna as oportunidades ATIVAS
+      overallScore,
+      recommendation,
+    };
+  }
+
+  // Se teve quebra recente E NÃO tem padrões ativos, só mostra a quebra
   if (hasRecentBreak) {
     overallScore = "ruim";
 
-    // Monta mensagem detalhada sobre qual padrão quebrou
     const breakDetails = brokenPatterns
       .map((bp) => `${bp.name} (tinha ${bp.countBefore}x sequências)`)
       .join(" e ");
@@ -381,7 +410,7 @@ export const analyzeRouletteResults = (
       imageUri,
       detectedNumbers: results,
       patterns: allPatterns,
-      opportunities: [], // Não retorna oportunidades se quebrou
+      opportunities: [],
       overallScore,
       recommendation,
     };
