@@ -1,8 +1,16 @@
 // Serviço de Backend API
 // Backend deployado no Render
+import * as Device from "expo-device";
+
 const BACKEND_URL = "https://mago-backend.onrender.com"; // Sempre usar produção
 
 console.log("[Backend Service] Usando URL:", BACKEND_URL);
+
+const getDeviceId = async (): Promise<string> => {
+  // Usa o Device ID do Expo ou gera um único baseado em várias propriedades
+  const deviceId = Device.osBuildId || Device.osInternalBuildId || Device.modelId || "unknown";
+  return deviceId;
+};
 
 export const backendService = {
   /**
@@ -10,7 +18,9 @@ export const backendService = {
    */
   verificarCodigo: async (codigo: string) => {
     try {
+      const deviceId = await getDeviceId();
       console.log("[Backend] Verificando código:", codigo);
+      console.log("[Backend] Device ID:", deviceId);
       console.log("[Backend] URL:", `${BACKEND_URL}/api/verificar-codigo`);
 
       const response = await fetch(`${BACKEND_URL}/api/verificar-codigo`, {
@@ -18,7 +28,7 @@ export const backendService = {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ codigo }),
+        body: JSON.stringify({ codigo, deviceId }),
       });
 
       console.log("[Backend] Response status:", response.status);

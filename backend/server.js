@@ -51,7 +51,7 @@ const saveUsers = (data) => {
   }
 };
 
-const verificarCodigo = (codigo) => {
+const verificarCodigo = (codigo, deviceId) => {
   const data = loadUsers();
   const user = data.users[codigo];
 
@@ -68,6 +68,20 @@ const verificarCodigo = (codigo) => {
 
   if (agora > expira) {
     return { valido: false, motivo: "Código expirado" };
+  }
+
+  // Verifica deviceId
+  if (user.deviceId === null) {
+    // Primeira vez usando - vincula ao dispositivo
+    user.deviceId = deviceId;
+    data.users[codigo] = user;
+    saveUsers(data);
+  } else if (user.deviceId !== deviceId) {
+    // Tentando usar em outro dispositivo
+    return {
+      valido: false,
+      motivo: "Este código já está em uso em outro dispositivo",
+    };
   }
 
   const diasRestantes = Math.ceil((expira - agora) / (1000 * 60 * 60 * 24));
@@ -97,13 +111,17 @@ app.get("/", (req, res) => {
 // Verificar código de acesso
 app.post("/api/verificar-codigo", (req, res) => {
   try {
-    const { codigo } = req.body;
+    const { codigo, deviceId } = req.body;
 
     if (!codigo) {
       return res.status(400).json({ erro: "Código não fornecido" });
     }
 
-    const resultado = verificarCodigo(codigo);
+    if (!deviceId) {
+      return res.status(400).json({ erro: "Device ID não fornecido" });
+    }
+
+    const resultado = verificarCodigo(codigo, deviceId);
 
     if (!resultado.valido) {
       return res.status(401).json({ erro: resultado.motivo });
