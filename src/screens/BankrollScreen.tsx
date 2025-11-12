@@ -24,7 +24,7 @@ export default function BankrollScreen() {
     currentBankroll,
     dailyResults,
     setInitialBankroll,
-    addDailyResult,
+    addLiveResult,
     getDailyResults,
     getTotalProfit,
   } = useBankrollStore();
@@ -35,6 +35,7 @@ export default function BankrollScreen() {
   const [initialAmount, setInitialAmount] = useState("");
   const [profitAmount, setProfitAmount] = useState("");
   const [isProfit, setIsProfit] = useState(true); // true = lucro, false = perda
+  const [selectedLive, setSelectedLive] = useState<"11h" | "15h" | "19h">("11h");
   const [showAddResult, setShowAddResult] = useState(false);
   const [showEditBankroll, setShowEditBankroll] = useState(false);
   const [editBankrollAmount, setEditBankrollAmount] = useState("");
@@ -52,9 +53,10 @@ export default function BankrollScreen() {
     const amount = parseFloat(profitAmount);
     if (!isNaN(amount) && amount !== 0) {
       const profit = isProfit ? amount : -amount;
-      addDailyResult(profit);
+      addLiveResult(selectedLive, profit);
       setProfitAmount("");
       setIsProfit(true);
+      setSelectedLive("11h");
       setShowAddResult(false);
     }
   };
@@ -260,27 +262,77 @@ export default function BankrollScreen() {
                 return (
                   <View
                     key={index}
-                    className="bg-slate-800 rounded-2xl p-4 border-2 border-slate-700 flex-row justify-between items-center"
+                    className="bg-slate-800 rounded-2xl p-4 border-2 border-slate-700 mb-3"
                   >
-                    <View>
-                      <Text className="text-white font-bold">
-                        {isToday
-                          ? "Hoje"
-                          : date.toLocaleDateString("pt-BR", {
-                              day: "2-digit",
-                              month: "short",
-                            })}
-                      </Text>
-                      <Text className="text-slate-400 text-xs">
-                        Banca: R$ {result.bankrollAfter.toFixed(2)}
-                      </Text>
+                    <View className="flex-row justify-between items-start mb-2">
+                      <View className="flex-1">
+                        <Text className="text-white font-bold text-base mb-1">
+                          {isToday
+                            ? "Hoje"
+                            : date.toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "short",
+                              })}
+                        </Text>
+                        <Text className="text-slate-400 text-xs mb-2">
+                          Banca: R$ {result.bankrollAfter.toFixed(2)}
+                        </Text>
+
+                        {/* Lives do dia */}
+                        <View className="space-y-1">
+                          {result.lives.map((live, liveIndex) => (
+                            <View
+                              key={liveIndex}
+                              className="flex-row items-center"
+                            >
+                              <View
+                                className={`px-2 py-0.5 rounded ${
+                                  live.time === "11h"
+                                    ? "bg-blue-500/20"
+                                    : live.time === "15h"
+                                      ? "bg-purple-500/20"
+                                      : "bg-amber-500/20"
+                                }`}
+                              >
+                                <Text
+                                  className={`text-xs font-bold ${
+                                    live.time === "11h"
+                                      ? "text-blue-400"
+                                      : live.time === "15h"
+                                        ? "text-purple-400"
+                                        : "text-amber-400"
+                                  }`}
+                                >
+                                  {live.time}
+                                </Text>
+                              </View>
+                              <Text
+                                className={`text-xs ml-2 ${
+                                  live.profit >= 0
+                                    ? "text-emerald-400"
+                                    : "text-red-400"
+                                }`}
+                              >
+                                {live.profit >= 0 ? "+" : ""}R${" "}
+                                {live.profit.toFixed(2)}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+
+                      <View className="items-end">
+                        <Text className="text-slate-400 text-xs mb-1">
+                          Total
+                        </Text>
+                        <Text
+                          className={`text-xl font-bold ${result.totalProfit >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                        >
+                          {result.totalProfit >= 0 ? "+" : ""}R${" "}
+                          {result.totalProfit.toFixed(2)}
+                        </Text>
+                      </View>
                     </View>
-                    <Text
-                      className={`text-lg font-bold ${result.profit >= 0 ? "text-emerald-400" : "text-red-400"}`}
-                    >
-                      {result.profit >= 0 ? "+" : ""}R${" "}
-                      {result.profit.toFixed(2)}
-                    </Text>
                   </View>
                 );
               })}
@@ -312,6 +364,46 @@ export default function BankrollScreen() {
                 <Text className="text-white text-2xl font-bold mb-4">
                   Adicionar Resultado
                 </Text>
+
+                <Text className="text-slate-400 text-sm mb-3">
+                  Escolha a live
+                </Text>
+
+                {/* Botões de Lives */}
+                <View className="flex-row gap-2 mb-4">
+                  <Pressable
+                    onPress={() => setSelectedLive("11h")}
+                    className={`flex-1 py-2 rounded-xl items-center border-2 ${
+                      selectedLive === "11h"
+                        ? "bg-blue-500 border-blue-400"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Text className="text-white font-bold text-sm">11h</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setSelectedLive("15h")}
+                    className={`flex-1 py-2 rounded-xl items-center border-2 ${
+                      selectedLive === "15h"
+                        ? "bg-purple-500 border-purple-400"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Text className="text-white font-bold text-sm">15h</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setSelectedLive("19h")}
+                    className={`flex-1 py-2 rounded-xl items-center border-2 ${
+                      selectedLive === "19h"
+                        ? "bg-amber-500 border-amber-400"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Text className="text-white font-bold text-sm">19h</Text>
+                  </Pressable>
+                </View>
 
                 <Text className="text-slate-400 text-sm mb-3">
                   Escolha o tipo de resultado
@@ -373,6 +465,7 @@ export default function BankrollScreen() {
                       setShowAddResult(false);
                       setProfitAmount("");
                       setIsProfit(true);
+                      setSelectedLive("11h");
                     }}
                     className="flex-1 bg-slate-700 py-3 rounded-xl items-center active:opacity-70"
                   >

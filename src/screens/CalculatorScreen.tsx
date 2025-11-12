@@ -216,33 +216,25 @@ export default function CalculatorScreen() {
                         <View className="bg-slate-900/50 rounded-xl p-4 mb-3">
                           <View className="flex-row justify-between mb-2">
                             <Text className="text-slate-300 text-sm">
-                              1ª Aposta (em 2 dúzias/colunas)
+                              Valor da Aposta (em 2 dúzias/colunas)
                             </Text>
                             <Text className="text-white font-bold">
                               R$ {strategy.firstBet.toFixed(2)}
                             </Text>
                           </View>
-                          <View className="flex-row justify-between mb-2">
-                            <Text className="text-slate-300 text-sm">
-                              2ª Aposta (se perder)
-                            </Text>
-                            <Text className="text-white font-bold">
-                              R$ {strategy.secondBet.toFixed(2)}
-                            </Text>
-                          </View>
                           <View className="h-px bg-slate-700 my-2" />
                           <View className="flex-row justify-between">
-                            <Text className="text-slate-300 font-bold">
-                              Total por Entrada
+                            <Text className="text-emerald-400 font-bold">
+                              Lucro por Entrada
                             </Text>
                             <Text className={`${color.text} font-bold text-lg`}>
-                              R$ {strategy.totalPerEntry.toFixed(2)}
+                              R$ {strategy.profitPerEntry.toFixed(2)}
                             </Text>
                           </View>
                         </View>
 
                         {/* Simulação de Lucro */}
-                        <View className="bg-slate-900/50 rounded-xl p-4">
+                        <View className="bg-slate-900/50 rounded-xl p-4 mb-3">
                           <Text className="text-slate-400 text-xs mb-3">
                             Como funciona cada entrada:
                           </Text>
@@ -262,38 +254,33 @@ export default function CalculatorScreen() {
                             <View className="flex-row items-center">
                               <View className="w-6 h-6 bg-emerald-500/20 rounded-full items-center justify-center mr-2">
                                 <Text className="text-emerald-400 text-xs font-bold">
-                                  2
+                                  ✓
                                 </Text>
                               </View>
-                              <Text className="text-slate-300 text-xs flex-1">
-                                Se ganhar: Lucro de R${" "}
-                                {strategy.profitPerEntry.toFixed(2)}
-                              </Text>
-                            </View>
-
-                            <View className="flex-row items-center">
-                              <View className="w-6 h-6 bg-amber-500/20 rounded-full items-center justify-center mr-2">
-                                <Text className="text-amber-400 text-xs font-bold">
-                                  3
-                                </Text>
-                              </View>
-                              <Text className="text-slate-300 text-xs flex-1">
-                                Se perder: Aposte R$ {strategy.secondBet.toFixed(2)}
-                              </Text>
-                            </View>
-
-                            <View className="flex-row items-center">
-                              <View className="w-6 h-6 bg-emerald-500/20 rounded-full items-center justify-center mr-2">
-                                <Text className="text-emerald-400 text-xs font-bold">
-                                  4
-                                </Text>
-                              </View>
-                              <Text className="text-slate-300 text-xs flex-1">
-                                Ao ganhar: Lucro de R${" "}
-                                {strategy.profitPerEntry.toFixed(2)} garantido
+                              <Text className="text-emerald-300 text-xs flex-1 font-bold">
+                                Se GANHAR: Lucro de R${" "}
+                                {strategy.profitPerEntry.toFixed(2)} ✓
                               </Text>
                             </View>
                           </View>
+                        </View>
+
+                        {/* Aviso de RED */}
+                        <View className="bg-red-500/10 rounded-xl p-4 border-2 border-red-500/30">
+                          <View className="flex-row items-center mb-2">
+                            <Ionicons
+                              name="alert-circle"
+                              size={18}
+                              color="#ef4444"
+                              style={{ marginRight: 6 }}
+                            />
+                            <Text className="text-red-400 text-xs font-bold">
+                              CASO DÊ RED (PERDA)
+                            </Text>
+                          </View>
+                          <Text className="text-red-300 text-xs">
+                            TRIPLIQUE o valor da aposta na próxima entrada para recuperar
+                          </Text>
                         </View>
 
                         {/* Resumo Final */}
@@ -303,11 +290,11 @@ export default function CalculatorScreen() {
                           </Text>
                           <Text className="text-white text-sm">
                             • Faça <Text className="font-bold">{strategy.entriesNeeded} entradas</Text> de R${" "}
-                            {strategy.profitPerEntry.toFixed(2)} cada
+                            {strategy.firstBet.toFixed(2)} cada
                           </Text>
                           <Text className="text-white text-sm">
-                            • Total necessário: R${" "}
-                            {strategy.totalPerEntry.toFixed(2)} por entrada
+                            • Lucro por entrada: R${" "}
+                            {strategy.profitPerEntry.toFixed(2)}
                           </Text>
                           <Text className="text-white text-sm">
                             • Meta final: <Text className={`font-bold ${color.text}`}>R$ {dailyGoal}</Text>

@@ -3,9 +3,15 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+export interface LiveResult {
+  time: "11h" | "15h" | "19h";
+  profit: number;
+}
+
 export interface DailyResult {
   date: string; // ISO string
-  profit: number; // positivo = lucro, negativo = perda
+  lives: LiveResult[]; // Array de resultados por live
+  totalProfit: number; // soma de todas as lives do dia
   bankrollAfter: number;
 }
 
@@ -16,7 +22,7 @@ interface BankrollStore {
 
   // Actions
   setInitialBankroll: (amount: number) => void;
-  addDailyResult: (profit: number) => void;
+  addLiveResult: (time: "11h" | "15h" | "19h", profit: number) => void;
   getDailyResults: (days: number) => DailyResult[];
   getTotalProfit: () => number;
 }
@@ -36,33 +42,66 @@ export const useBankrollStore = create<BankrollStore>()(
         });
       },
 
-      addDailyResult: (profit) => {
+      addLiveResult: (time, profit) => {
         const state = get();
         const today = new Date().toISOString().split("T")[0];
 
-        // Verifica se já existe resultado para hoje
+        // Busca resultado de hoje
         const existingIndex = state.dailyResults.findIndex(
           (r) => r.date.split("T")[0] === today
         );
 
-        const newBankroll = state.currentBankroll + profit;
-
-        const newResult: DailyResult = {
-          date: new Date().toISOString(),
-          profit,
-          bankrollAfter: newBankroll,
-        };
-
         if (existingIndex >= 0) {
           // Atualiza resultado de hoje
+          const dayResult = { ...state.dailyResults[existingIndex] };
+
+          // Remove live anterior se já existir
+          dayResult.lives = dayResult.lives.filter((l) => l.time !== time);
+
+          // Adiciona nova live
+          dayResult.lives.push({ time, profit });
+
+          // Recalcula total do dia
+          dayResult.totalProfit = dayResult.lives.reduce(
+            (sum, live) => sum + live.profit,
+            0
+          );
+
+          // Recalcula banca
+          const previousBankroll =
+            existingIndex > 0
+              ? state.dailyResults[existingIndex - 1].bankrollAfter
+              : state.initialBankroll;
+
+          dayResult.bankrollAfter = previousBankroll + dayResult.totalProfit;
+
           const updatedResults = [...state.dailyResults];
-          updatedResults[existingIndex] = newResult;
+          updatedResults[existingIndex] = dayResult;
+
+          // Recalcula banca atual
+          const newBankroll = dayResult.bankrollAfter;
+
           set({
             currentBankroll: newBankroll,
             dailyResults: updatedResults,
           });
         } else {
-          // Adiciona novo resultado
+          // Cria novo resultado para hoje
+          const totalProfit = profit;
+          const previousBankroll =
+            state.dailyResults.length > 0
+              ? state.dailyResults[state.dailyResults.length - 1].bankrollAfter
+              : state.initialBankroll;
+
+          const newBankroll = previousBankroll + totalProfit;
+
+          const newResult: DailyResult = {
+            date: new Date().toISOString(),
+            lives: [{ time, profit }],
+            totalProfit,
+            bankrollAfter: newBankroll,
+          };
+
           set({
             currentBankroll: newBankroll,
             dailyResults: [...state.dailyResults, newResult],
