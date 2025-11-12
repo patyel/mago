@@ -118,76 +118,103 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
                   </Text>
                 </View>
               ) : (
-                <View className="space-y-4">
-                  {analysis.opportunities.map((opp, index) => (
-                    <View
-                      key={index}
-                      className={`${
-                        opp.confidence === "alavancar"
-                          ? "bg-gradient-to-r from-purple-900/40 to-purple-800/40 border-purple-500/50"
-                          : opp.confidence === "bom"
-                          ? "bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-yellow-500/50"
-                          : "bg-gradient-to-r from-red-900/40 to-red-800/40 border-red-500/50"
-                      } rounded-3xl p-6 border-2`}
-                    >
-                      {/* Header */}
-                      <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
-                          <View
-                            className={`${getConfidenceBadge(
-                              opp.confidence
-                            )} w-12 h-12 rounded-2xl items-center justify-center mr-3`}
-                          >
-                            <Ionicons
-                              name={opp.confidence === "alavancar" ? "rocket" : opp.confidence === "bom" ? "thumbs-up" : "close-circle"}
-                              size={24}
-                              color="white"
-                            />
-                          </View>
-                          <View>
-                            <Text className="text-white font-black text-xl capitalize">
-                              {opp.type === "color"
-                                ? "Cor"
-                                : opp.type === "dozen"
-                                ? "Dúzias"
-                                : "Colunas"}
-                            </Text>
-                            <Text
-                              className={`${
-                                opp.confidence === "alavancar"
-                                  ? "text-purple-300"
-                                  : opp.confidence === "bom"
-                                  ? "text-yellow-300"
-                                  : "text-red-300"
-                              } text-sm font-bold uppercase`}
+                <>
+                  <View className="space-y-4 mb-6">
+                    {analysis.opportunities.map((opp, index) => (
+                      <View
+                        key={index}
+                        className={`${
+                          opp.confidence === "alavancar"
+                            ? "bg-gradient-to-r from-purple-900/40 to-purple-800/40 border-purple-500/50"
+                            : opp.confidence === "bom"
+                            ? "bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-yellow-500/50"
+                            : "bg-gradient-to-r from-red-900/40 to-red-800/40 border-red-500/50"
+                        } rounded-3xl p-6 border-2`}
+                      >
+                        {/* Header */}
+                        <View className="flex-row items-center justify-between mb-4">
+                          <View className="flex-row items-center">
+                            <View
+                              className={`${getConfidenceBadge(
+                                opp.confidence
+                              )} w-12 h-12 rounded-2xl items-center justify-center mr-3`}
                             >
-                              {opp.confidence === "alavancar"
-                                ? "🚀 Alavancar"
-                                : opp.confidence === "bom"
-                                ? "👍 Bom"
-                                : "⚠️ Fraco"}
+                              <Ionicons
+                                name={opp.confidence === "alavancar" ? "rocket" : opp.confidence === "bom" ? "thumbs-up" : "close-circle"}
+                                size={24}
+                                color="white"
+                              />
+                            </View>
+                            <View>
+                              <Text className="text-white font-black text-xl capitalize">
+                                {opp.type === "color"
+                                  ? "Cor"
+                                  : opp.type === "dozen"
+                                  ? "Dúzias"
+                                  : "Colunas"}
+                              </Text>
+                              <Text
+                                className={`${
+                                  opp.confidence === "alavancar"
+                                    ? "text-purple-300"
+                                    : opp.confidence === "bom"
+                                    ? "text-yellow-300"
+                                    : "text-red-300"
+                                } text-sm font-bold uppercase`}
+                              >
+                                {opp.confidence === "alavancar"
+                                  ? "🚀 Alavancar"
+                                  : opp.confidence === "bom"
+                                  ? "👍 Bom"
+                                  : "⚠️ Fraco"}
+                              </Text>
+                            </View>
+                          </View>
+                          <View className="bg-white/20 px-4 py-2 rounded-xl">
+                            <Text className="text-white font-black text-lg">
+                              {opp.sequenceCount}x
                             </Text>
                           </View>
                         </View>
-                        <View className="bg-white/20 px-4 py-2 rounded-xl">
-                          <Text className="text-white font-black text-lg">
-                            {opp.sequenceCount}x
+
+                        {/* Bet Info */}
+                        <View className="bg-slate-900 rounded-2xl p-5">
+                          <Text className="text-slate-400 text-sm mb-2 font-semibold">
+                            💰 Entre em:
+                          </Text>
+                          <Text className="text-white text-2xl font-black">
+                            {opp.betOn.join(" + ")}
                           </Text>
                         </View>
                       </View>
+                    ))}
+                  </View>
 
-                      {/* Bet Info */}
-                      <View className="bg-slate-900 rounded-2xl p-5">
-                        <Text className="text-slate-400 text-sm mb-2 font-semibold">
-                          💰 Entre em:
+                  {/* Padrões que Quebraram - se tiver */}
+                  {analysis.recommendation.includes("⚠️ ATENÇÃO - PADRÃO QUEBROU:") && (
+                    <View className="bg-gradient-to-r from-orange-900/40 to-orange-800/40 rounded-3xl p-6 border-2 border-orange-500/50">
+                      <View className="flex-row items-center mb-4">
+                        <View className="w-12 h-12 bg-orange-500 rounded-2xl items-center justify-center mr-3">
+                          <Ionicons name="warning" size={28} color="white" />
+                        </View>
+                        <Text className="text-white font-black text-xl">
+                          ⚠️ Padrão Quebrou
                         </Text>
-                        <Text className="text-white text-2xl font-black">
-                          {opp.betOn.join(" + ")}
+                      </View>
+                      <Text className="text-orange-100 leading-7 font-medium">
+                        {analysis.recommendation
+                          .split("⚠️ ATENÇÃO - PADRÃO QUEBROU:")[1]
+                          ?.split("\n\n📊")[0]
+                          .trim()}
+                      </Text>
+                      <View className="mt-4 bg-orange-500/20 rounded-xl p-4">
+                        <Text className="text-orange-200 text-sm font-semibold">
+                          💡 Dica: Espere para ver se este padrão volta e entre quando voltar! Operamos a favor da sequência - quanto mais green, melhor!
                         </Text>
                       </View>
                     </View>
-                  ))}
-                </View>
+                  )}
+                </>
               )}
 
             </View>
