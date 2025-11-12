@@ -1,4 +1,4 @@
-// Calculadora de Lucro e Gestão de Apostas
+// Calculadora de Lucro e Gestão de Apostas - Versão Didática
 import React, { useState } from "react";
 import {
   View,
@@ -14,48 +14,66 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
+interface BettingStrategy {
+  entriesNeeded: number;
+  profitPerEntry: number;
+  firstBet: number;
+  secondBet: number;
+  totalPerEntry: number;
+  description: string;
+}
+
 export default function CalculatorScreen() {
   const [dailyGoal, setDailyGoal] = useState("");
   const [bankroll, setBankroll] = useState("");
-  const [betType, setBetType] = useState<"dozen" | "column">("dozen");
   const [showResults, setShowResults] = useState(false);
 
-  const calculateBetting = () => {
+  const calculateStrategies = (): BettingStrategy[] => {
     const goal = parseFloat(dailyGoal);
     const bank = parseFloat(bankroll);
 
     if (isNaN(goal) || isNaN(bank) || goal <= 0 || bank <= 0) {
-      return null;
+      return [];
     }
 
-    // Pagamento da roleta: dúzias e colunas pagam 2:1
+    const strategies: BettingStrategy[] = [];
+
+    // Pagamento: dúzias e colunas pagam 2:1
     const payout = 2;
 
-    // Progressão de Martingale para 2 apostas (primeira e segunda tentativa)
-    // Se apostar X e perder, na próxima aposta 2X para recuperar
-    const firstBet = goal / payout;
-    const secondBet = (firstBet + goal) / payout; // Recupera a primeira aposta + lucro desejado
+    // Opções: 1, 2, 5, 10 entradas
+    const entryOptions = [1, 2, 5, 10];
 
-    // Total necessário para completar a progressão
-    const totalNeeded = firstBet + secondBet;
+    entryOptions.forEach((entries) => {
+      const profitPerEntry = goal / entries;
+      const firstBet = profitPerEntry / payout;
+      const secondBet = (firstBet + profitPerEntry) / payout;
+      const totalPerEntry = firstBet + secondBet;
 
-    // Percentual da banca
-    const percentageOfBank = (totalNeeded / bank) * 100;
+      // Só adiciona se for viável com a banca
+      if (totalPerEntry <= bank) {
+        strategies.push({
+          entriesNeeded: entries,
+          profitPerEntry,
+          firstBet,
+          secondBet,
+          totalPerEntry,
+          description:
+            entries === 1
+              ? "Meta em 1 tacada (alto risco)"
+              : entries === 2
+                ? "Meta em 2 entradas (risco moderado)"
+                : entries === 5
+                  ? "Meta em 5 entradas (risco baixo)"
+                  : "Meta em 10 entradas (muito conservador)",
+        });
+      }
+    });
 
-    // Número de operações possíveis com a banca
-    const possibleOperations = Math.floor(bank / totalNeeded);
-
-    return {
-      firstBet: firstBet.toFixed(2),
-      secondBet: secondBet.toFixed(2),
-      totalNeeded: totalNeeded.toFixed(2),
-      percentageOfBank: percentageOfBank.toFixed(1),
-      possibleOperations,
-      profitPerOperation: goal.toFixed(2),
-    };
+    return strategies;
   };
 
-  const results = showResults ? calculateBetting() : null;
+  const strategies = showResults ? calculateStrategies() : [];
 
   return (
     <SafeAreaView className="flex-1 bg-slate-900" edges={["top"]}>
@@ -71,7 +89,7 @@ export default function CalculatorScreen() {
                 Calculadora de Lucro
               </Text>
               <Text className="text-slate-400">
-                Planeje suas apostas e calcule seu lucro diário
+                Descubra como atingir sua meta diária
               </Text>
             </View>
 
@@ -114,177 +132,253 @@ export default function CalculatorScreen() {
                   />
                 </View>
 
-                {/* Tipo de Aposta */}
-                <View className="mb-6">
-                  <Text className="text-white text-sm font-medium mb-2">
-                    Tipo de Aposta
-                  </Text>
-                  <View className="flex-row gap-3">
-                    <Pressable
-                      onPress={() => setBetType("dozen")}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                        betType === "dozen"
-                          ? "bg-emerald-500 border-emerald-400"
-                          : "bg-slate-700 border-slate-600"
-                      }`}
-                    >
-                      <Text className="text-white font-bold">Dúzias</Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => setBetType("column")}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                        betType === "column"
-                          ? "bg-emerald-500 border-emerald-400"
-                          : "bg-slate-700 border-slate-600"
-                      }`}
-                    >
-                      <Text className="text-white font-bold">Colunas</Text>
-                    </Pressable>
-                  </View>
-                </View>
-
                 {/* Botão Calcular */}
                 <Pressable
                   onPress={() => setShowResults(true)}
-                  className="bg-emerald-500 py-4 rounded-xl items-center active:opacity-70"
+                  className="bg-purple-500 py-4 rounded-xl items-center active:opacity-70"
                   disabled={!dailyGoal || !bankroll}
                 >
                   <Text className="text-white text-lg font-bold">
-                    Calcular Gestão
+                    Ver Estratégias
                   </Text>
                 </Pressable>
               </View>
             </View>
 
-            {/* Resultados */}
-            {showResults && results && (
+            {/* Resultados - Estratégias */}
+            {showResults && strategies.length > 0 && (
               <View className="px-6 mb-6">
-                <Text className="text-white text-2xl font-bold mb-4">
-                  Plano de Apostas
+                <Text className="text-white text-2xl font-bold mb-2">
+                  Escolha Sua Estratégia
+                </Text>
+                <Text className="text-slate-400 mb-4">
+                  {strategies.length} formas de atingir R$ {dailyGoal}
                 </Text>
 
-                {/* Cards de Resultado */}
-                <View className="space-y-3">
-                  {/* Primeira Aposta */}
-                  <View className="bg-slate-800 rounded-2xl p-5 border-2 border-emerald-500/30">
-                    <View className="flex-row items-center mb-2">
-                      <View className="w-8 h-8 bg-emerald-500 rounded-full items-center justify-center mr-3">
-                        <Text className="text-white font-bold">1</Text>
+                {/* Cards de Estratégias */}
+                <View className="space-y-4">
+                  {strategies.map((strategy, index) => {
+                    const colors = [
+                      {
+                        bg: "bg-red-500/10",
+                        border: "border-red-500",
+                        text: "text-red-400",
+                        icon: "#ef4444",
+                      },
+                      {
+                        bg: "bg-amber-500/10",
+                        border: "border-amber-500",
+                        text: "text-amber-400",
+                        icon: "#f59e0b",
+                      },
+                      {
+                        bg: "bg-emerald-500/10",
+                        border: "border-emerald-500",
+                        text: "text-emerald-400",
+                        icon: "#10b981",
+                      },
+                      {
+                        bg: "bg-blue-500/10",
+                        border: "border-blue-500",
+                        text: "text-blue-400",
+                        icon: "#3b82f6",
+                      },
+                    ];
+
+                    const color = colors[index] || colors[0];
+
+                    return (
+                      <View
+                        key={index}
+                        className={`${color.bg} rounded-2xl p-5 border-2 ${color.border}`}
+                      >
+                        {/* Header da Estratégia */}
+                        <View className="flex-row items-center mb-4">
+                          <View
+                            style={{ backgroundColor: color.icon + "33" }}
+                            className="w-12 h-12 rounded-full items-center justify-center mr-3"
+                          >
+                            <Text className="text-white text-xl font-bold">
+                              {strategy.entriesNeeded}x
+                            </Text>
+                          </View>
+                          <View className="flex-1">
+                            <Text className="text-white text-lg font-bold">
+                              {strategy.description}
+                            </Text>
+                            <Text className={`${color.text} text-sm`}>
+                              R$ {strategy.profitPerEntry.toFixed(2)} por entrada
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Detalhes das Apostas */}
+                        <View className="bg-slate-900/50 rounded-xl p-4 mb-3">
+                          <View className="flex-row justify-between mb-2">
+                            <Text className="text-slate-300 text-sm">
+                              1ª Aposta (em 2 dúzias/colunas)
+                            </Text>
+                            <Text className="text-white font-bold">
+                              R$ {strategy.firstBet.toFixed(2)}
+                            </Text>
+                          </View>
+                          <View className="flex-row justify-between mb-2">
+                            <Text className="text-slate-300 text-sm">
+                              2ª Aposta (se perder)
+                            </Text>
+                            <Text className="text-white font-bold">
+                              R$ {strategy.secondBet.toFixed(2)}
+                            </Text>
+                          </View>
+                          <View className="h-px bg-slate-700 my-2" />
+                          <View className="flex-row justify-between">
+                            <Text className="text-slate-300 font-bold">
+                              Total por Entrada
+                            </Text>
+                            <Text className={`${color.text} font-bold text-lg`}>
+                              R$ {strategy.totalPerEntry.toFixed(2)}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Simulação de Lucro */}
+                        <View className="bg-slate-900/50 rounded-xl p-4">
+                          <Text className="text-slate-400 text-xs mb-3">
+                            Como funciona cada entrada:
+                          </Text>
+
+                          <View className="space-y-2">
+                            <View className="flex-row items-center">
+                              <View className="w-6 h-6 bg-emerald-500/20 rounded-full items-center justify-center mr-2">
+                                <Text className="text-emerald-400 text-xs font-bold">
+                                  1
+                                </Text>
+                              </View>
+                              <Text className="text-slate-300 text-xs flex-1">
+                                Aposte R$ {strategy.firstBet.toFixed(2)}
+                              </Text>
+                            </View>
+
+                            <View className="flex-row items-center">
+                              <View className="w-6 h-6 bg-emerald-500/20 rounded-full items-center justify-center mr-2">
+                                <Text className="text-emerald-400 text-xs font-bold">
+                                  2
+                                </Text>
+                              </View>
+                              <Text className="text-slate-300 text-xs flex-1">
+                                Se ganhar: Lucro de R${" "}
+                                {strategy.profitPerEntry.toFixed(2)}
+                              </Text>
+                            </View>
+
+                            <View className="flex-row items-center">
+                              <View className="w-6 h-6 bg-amber-500/20 rounded-full items-center justify-center mr-2">
+                                <Text className="text-amber-400 text-xs font-bold">
+                                  3
+                                </Text>
+                              </View>
+                              <Text className="text-slate-300 text-xs flex-1">
+                                Se perder: Aposte R$ {strategy.secondBet.toFixed(2)}
+                              </Text>
+                            </View>
+
+                            <View className="flex-row items-center">
+                              <View className="w-6 h-6 bg-emerald-500/20 rounded-full items-center justify-center mr-2">
+                                <Text className="text-emerald-400 text-xs font-bold">
+                                  4
+                                </Text>
+                              </View>
+                              <Text className="text-slate-300 text-xs flex-1">
+                                Ao ganhar: Lucro de R${" "}
+                                {strategy.profitPerEntry.toFixed(2)} garantido
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+
+                        {/* Resumo Final */}
+                        <View className="mt-4 pt-4 border-t-2 border-slate-700">
+                          <Text className="text-slate-400 text-xs mb-2">
+                            Resumo da Estratégia:
+                          </Text>
+                          <Text className="text-white text-sm">
+                            • Faça <Text className="font-bold">{strategy.entriesNeeded} entradas</Text> de R${" "}
+                            {strategy.profitPerEntry.toFixed(2)} cada
+                          </Text>
+                          <Text className="text-white text-sm">
+                            • Total necessário: R${" "}
+                            {strategy.totalPerEntry.toFixed(2)} por entrada
+                          </Text>
+                          <Text className="text-white text-sm">
+                            • Meta final: <Text className={`font-bold ${color.text}`}>R$ {dailyGoal}</Text>
+                          </Text>
+                        </View>
                       </View>
-                      <Text className="text-white text-lg font-bold">
-                        Primeira Aposta
-                      </Text>
-                    </View>
-                    <Text className="text-emerald-400 text-3xl font-bold">
-                      R$ {results.firstBet}
-                    </Text>
-                    <Text className="text-slate-400 text-sm mt-1">
-                      Aposte este valor em 2{" "}
-                      {betType === "dozen" ? "dúzias" : "colunas"}
-                    </Text>
-                  </View>
-
-                  {/* Segunda Aposta */}
-                  <View className="bg-slate-800 rounded-2xl p-5 border-2 border-amber-500/30">
-                    <View className="flex-row items-center mb-2">
-                      <View className="w-8 h-8 bg-amber-500 rounded-full items-center justify-center mr-3">
-                        <Text className="text-white font-bold">2</Text>
-                      </View>
-                      <Text className="text-white text-lg font-bold">
-                        Segunda Aposta (se perder)
-                      </Text>
-                    </View>
-                    <Text className="text-amber-400 text-3xl font-bold">
-                      R$ {results.secondBet}
-                    </Text>
-                    <Text className="text-slate-400 text-sm mt-1">
-                      Para recuperar e atingir a meta
-                    </Text>
-                  </View>
-
-                  {/* Total Necessário */}
-                  <View className="bg-slate-800 rounded-2xl p-5 border-2 border-slate-700">
-                    <Text className="text-slate-400 text-sm mb-1">
-                      Total Necessário
-                    </Text>
-                    <Text className="text-white text-2xl font-bold">
-                      R$ {results.totalNeeded}
-                    </Text>
-                    <Text className="text-slate-400 text-xs mt-1">
-                      {results.percentageOfBank}% da sua banca
-                    </Text>
-                  </View>
-
-                  {/* Operações Possíveis */}
-                  <View className="bg-slate-800 rounded-2xl p-5 border-2 border-slate-700">
-                    <Text className="text-slate-400 text-sm mb-1">
-                      Operações Possíveis
-                    </Text>
-                    <Text className="text-white text-2xl font-bold">
-                      {results.possibleOperations}x
-                    </Text>
-                    <Text className="text-slate-400 text-xs mt-1">
-                      Com sua banca atual
-                    </Text>
-                  </View>
-
-                  {/* Lucro por Operação */}
-                  <View className="bg-emerald-500/10 rounded-2xl p-5 border-2 border-emerald-500">
-                    <Text className="text-emerald-400 text-sm mb-1">
-                      Lucro por Operação
-                    </Text>
-                    <Text className="text-emerald-400 text-2xl font-bold">
-                      R$ {results.profitPerOperation}
-                    </Text>
-                    <Text className="text-emerald-400/70 text-xs mt-1">
-                      Se acertar em qualquer tentativa
-                    </Text>
-                  </View>
+                    );
+                  })}
                 </View>
 
                 {/* Dicas de Gestão */}
-                <View className="mt-6 bg-blue-500/10 rounded-2xl p-5 border-2 border-blue-500/30">
+                <View className="mt-6 bg-purple-500/10 rounded-2xl p-5 border-2 border-purple-500/30">
                   <View className="flex-row items-center mb-3">
                     <Ionicons
                       name="bulb"
                       size={24}
-                      color="#3b82f6"
+                      color="#a855f7"
                       style={{ marginRight: 8 }}
                     />
-                    <Text className="text-blue-400 text-lg font-bold">
-                      Dicas de Gestão
+                    <Text className="text-purple-400 text-lg font-bold">
+                      Dicas Importantes
                     </Text>
                   </View>
 
                   <View className="space-y-2">
                     <View className="flex-row">
-                      <Text className="text-blue-400 mr-2">•</Text>
-                      <Text className="text-blue-300 text-sm flex-1">
-                        Nunca aposte mais de 5% da sua banca total em uma
-                        operação
+                      <Text className="text-purple-400 mr-2">•</Text>
+                      <Text className="text-purple-300 text-sm flex-1">
+                        Estratégias com menos entradas são mais agressivas
                       </Text>
                     </View>
                     <View className="flex-row">
-                      <Text className="text-blue-400 mr-2">•</Text>
-                      <Text className="text-blue-300 text-sm flex-1">
-                        Pare ao atingir sua meta diária para evitar perdas
-                        desnecessárias
+                      <Text className="text-purple-400 mr-2">•</Text>
+                      <Text className="text-purple-300 text-sm flex-1">
+                        Estratégias com mais entradas são mais seguras
                       </Text>
                     </View>
                     <View className="flex-row">
-                      <Text className="text-blue-400 mr-2">•</Text>
-                      <Text className="text-blue-300 text-sm flex-1">
-                        Use o padrão de 4 ou mais repetições identificado pelo
-                        app
+                      <Text className="text-purple-400 mr-2">•</Text>
+                      <Text className="text-purple-300 text-sm flex-1">
+                        Use o app para identificar padrões antes de entrar
                       </Text>
                     </View>
                     <View className="flex-row">
-                      <Text className="text-blue-400 mr-2">•</Text>
-                      <Text className="text-blue-300 text-sm flex-1">
-                        Se perder 2 vezes seguidas, pare e reavalie a estratégia
+                      <Text className="text-purple-400 mr-2">•</Text>
+                      <Text className="text-purple-300 text-sm flex-1">
+                        Pare ao atingir a meta diária para proteger seu lucro
                       </Text>
                     </View>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {showResults && strategies.length === 0 && (
+              <View className="px-6 mb-6">
+                <View className="bg-red-500/10 rounded-2xl p-6 border-2 border-red-500">
+                  <View className="items-center">
+                    <Ionicons
+                      name="alert-circle"
+                      size={48}
+                      color="#ef4444"
+                      style={{ marginBottom: 12 }}
+                    />
+                    <Text className="text-red-400 text-xl font-bold mb-2">
+                      Banca Insuficiente
+                    </Text>
+                    <Text className="text-red-300 text-center">
+                      Sua banca é muito baixa para atingir essa meta com segurança.
+                      Reduza a meta ou aumente sua banca.
+                    </Text>
                   </View>
                 </View>
               </View>

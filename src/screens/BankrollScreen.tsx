@@ -34,7 +34,10 @@ export default function BankrollScreen() {
   );
   const [initialAmount, setInitialAmount] = useState("");
   const [profitAmount, setProfitAmount] = useState("");
+  const [isProfit, setIsProfit] = useState(true); // true = lucro, false = perda
   const [showAddResult, setShowAddResult] = useState(false);
+  const [showEditBankroll, setShowEditBankroll] = useState(false);
+  const [editBankrollAmount, setEditBankrollAmount] = useState("");
 
   const handleSetInitial = () => {
     const amount = parseFloat(initialAmount);
@@ -46,11 +49,22 @@ export default function BankrollScreen() {
   };
 
   const handleAddResult = () => {
-    const profit = parseFloat(profitAmount);
-    if (!isNaN(profit)) {
+    const amount = parseFloat(profitAmount);
+    if (!isNaN(amount) && amount !== 0) {
+      const profit = isProfit ? amount : -amount;
       addDailyResult(profit);
       setProfitAmount("");
+      setIsProfit(true);
       setShowAddResult(false);
+    }
+  };
+
+  const handleEditBankroll = () => {
+    const amount = parseFloat(editBankrollAmount);
+    if (amount > 0) {
+      setInitialBankroll(amount);
+      setEditBankrollAmount("");
+      setShowEditBankroll(false);
     }
   };
 
@@ -128,11 +142,30 @@ export default function BankrollScreen() {
 
         {/* Cards de Resumo */}
         <View className="px-6 mb-6">
-          <View className="bg-slate-800 rounded-3xl p-6 border-2 border-slate-700 mb-4">
-            <Text className="text-slate-400 text-sm mb-1">Banca Atual</Text>
-            <Text className="text-white text-4xl font-bold">
-              R$ {currentBankroll.toFixed(2)}
-            </Text>
+          <View className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-3xl p-6 border-2 border-purple-400 mb-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-purple-200 text-sm">Banca Atual</Text>
+              <Pressable
+                onPress={() => {
+                  setEditBankrollAmount(currentBankroll.toFixed(2));
+                  setShowEditBankroll(true);
+                }}
+                className="bg-purple-500/30 px-3 py-1 rounded-full active:opacity-70"
+              >
+                <Text className="text-white text-xs font-bold">Editar</Text>
+              </Pressable>
+            </View>
+            <View className="flex-row items-center">
+              <Ionicons
+                name="wallet"
+                size={32}
+                color="#c084fc"
+                style={{ marginRight: 12 }}
+              />
+              <Text className="text-white text-4xl font-bold">
+                R$ {currentBankroll.toFixed(2)}
+              </Text>
+            </View>
           </View>
 
           <View className="flex-row gap-3">
@@ -275,18 +308,59 @@ export default function BankrollScreen() {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View className="bg-slate-800 rounded-3xl p-6 mx-6 border-2 border-slate-700">
+              <View className="bg-slate-800 rounded-3xl p-6 mx-6 border-2 border-slate-700 w-80">
                 <Text className="text-white text-2xl font-bold mb-4">
                   Adicionar Resultado
                 </Text>
 
+                <Text className="text-slate-400 text-sm mb-3">
+                  Escolha o tipo de resultado
+                </Text>
+
+                {/* Botões de Lucro/Perda */}
+                <View className="flex-row gap-3 mb-4">
+                  <Pressable
+                    onPress={() => setIsProfit(true)}
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                      isProfit
+                        ? "bg-emerald-500 border-emerald-400"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Ionicons
+                      name="trending-up"
+                      size={20}
+                      color="white"
+                      style={{ marginBottom: 4 }}
+                    />
+                    <Text className="text-white font-bold text-sm">Lucro</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setIsProfit(false)}
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                      !isProfit
+                        ? "bg-red-500 border-red-400"
+                        : "bg-slate-700 border-slate-600"
+                    }`}
+                  >
+                    <Ionicons
+                      name="trending-down"
+                      size={20}
+                      color="white"
+                      style={{ marginBottom: 4 }}
+                    />
+                    <Text className="text-white font-bold text-sm">Perda</Text>
+                  </Pressable>
+                </View>
+
                 <Text className="text-slate-400 text-sm mb-2">
-                  Informe o lucro ou perda de hoje
+                  Valor (R$)
                 </Text>
 
                 <TextInput
                   className="bg-slate-700 text-white text-2xl px-4 py-4 rounded-xl border-2 border-slate-600 mb-6"
-                  placeholder="+100.00 ou -50.00"
+                  placeholder="100.00"
                   placeholderTextColor="#64748b"
                   keyboardType="decimal-pad"
                   value={profitAmount}
@@ -298,6 +372,7 @@ export default function BankrollScreen() {
                     onPress={() => {
                       setShowAddResult(false);
                       setProfitAmount("");
+                      setIsProfit(true);
                     }}
                     className="flex-1 bg-slate-700 py-3 rounded-xl items-center active:opacity-70"
                   >
@@ -306,9 +381,69 @@ export default function BankrollScreen() {
 
                   <Pressable
                     onPress={handleAddResult}
-                    className="flex-1 bg-emerald-500 py-3 rounded-xl items-center active:opacity-70"
+                    className={`flex-1 py-3 rounded-xl items-center active:opacity-70 ${
+                      isProfit ? "bg-emerald-500" : "bg-red-500"
+                    }`}
                   >
                     <Text className="text-white font-bold">Adicionar</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </View>
+      )}
+
+      {/* Modal para editar banca */}
+      {showEditBankroll && (
+        <View className="absolute inset-0 bg-black/70 justify-center items-center">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View className="bg-slate-800 rounded-3xl p-6 mx-6 border-2 border-purple-500 w-80">
+                <View className="items-center mb-4">
+                  <View className="w-16 h-16 bg-purple-500/20 rounded-full items-center justify-center mb-3">
+                    <Ionicons name="wallet" size={32} color="#a855f7" />
+                  </View>
+                  <Text className="text-white text-2xl font-bold">
+                    Editar Banca
+                  </Text>
+                </View>
+
+                <Text className="text-slate-400 text-sm mb-2">
+                  Novo valor da banca (R$)
+                </Text>
+
+                <TextInput
+                  className="bg-slate-700 text-white text-2xl px-4 py-4 rounded-xl border-2 border-slate-600 mb-2"
+                  placeholder="1000.00"
+                  placeholderTextColor="#64748b"
+                  keyboardType="decimal-pad"
+                  value={editBankrollAmount}
+                  onChangeText={setEditBankrollAmount}
+                />
+
+                <Text className="text-amber-400 text-xs mb-6">
+                  ⚠️ Isso irá redefinir sua banca. Use para correções ou ajustes manuais.
+                </Text>
+
+                <View className="flex-row gap-3">
+                  <Pressable
+                    onPress={() => {
+                      setShowEditBankroll(false);
+                      setEditBankrollAmount("");
+                    }}
+                    className="flex-1 bg-slate-700 py-3 rounded-xl items-center active:opacity-70"
+                  >
+                    <Text className="text-white font-bold">Cancelar</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handleEditBankroll}
+                    className="flex-1 bg-purple-500 py-3 rounded-xl items-center active:opacity-70"
+                  >
+                    <Text className="text-white font-bold">Salvar</Text>
                   </Pressable>
                 </View>
               </View>
