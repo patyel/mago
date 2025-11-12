@@ -65,12 +65,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     ✨ A IA que trabalha pra você
                   </Text>
                 </View>
-                <Pressable
-                  onPress={() => navigation.navigate("History")}
-                  className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl items-center justify-center active:opacity-70 border-2 border-purple-400"
-                >
-                  <Ionicons name="time" size={28} color="white" />
-                </Pressable>
+                <View className="flex-row gap-2">
+                  <Pressable
+                    onPress={() => navigation.navigate("History")}
+                    className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl items-center justify-center active:opacity-70 border-2 border-purple-400"
+                  >
+                    <Ionicons name="time" size={28} color="white" />
+                  </Pressable>
+                  <Pressable
+                    onPress={handleRenovar}
+                    className="w-14 h-14 bg-slate-700/50 rounded-2xl items-center justify-center active:opacity-70 border-2 border-slate-600"
+                  >
+                    <Ionicons name="log-out-outline" size={26} color="white" />
+                  </Pressable>
+                </View>
               </View>
             </View>
 
