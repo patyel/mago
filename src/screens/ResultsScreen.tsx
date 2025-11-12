@@ -1,5 +1,5 @@
 // Tela de Resultados - Mostra a análise completa
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,6 +8,7 @@ import { RootStackParamList } from "../navigation/RootNavigator";
 import { RouletteOpportunity } from "../types/roulette";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useStatsStore } from "../state/statsStore";
 
 type ResultsScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Results">;
@@ -16,6 +17,17 @@ type ResultsScreenProps = {
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({ navigation, route }) => {
   const { analysis } = route.params;
+  const addAnalysis = useStatsStore((s) => s.addAnalysis);
+
+  // Adiciona análise automaticamente ao entrar na tela
+  useEffect(() => {
+    addAnalysis({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      imageUri: analysis.imageUri,
+      score: analysis.overallScore,
+    });
+  }, []);
 
   const getScoreColor = () => {
     switch (analysis.overallScore) {

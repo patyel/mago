@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
 import { useBankrollStore } from "../state/bankrollStore";
+import { useSettingsStore } from "../state/settingsStore";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -28,6 +29,8 @@ export default function BankrollScreen() {
     getDailyResults,
     getTotalProfit,
   } = useBankrollStore();
+
+  const { checkBankrollAlert, checkStopLoss, resetStopLoss, settings } = useSettingsStore();
 
   const [showInitialSetup, setShowInitialSetup] = useState(
     initialBankroll === 0
@@ -54,6 +57,19 @@ export default function BankrollScreen() {
     if (!isNaN(amount) && amount !== 0) {
       const profit = isProfit ? amount : -amount;
       addLiveResult(selectedLive, profit);
+
+      // Checa alertas
+      checkBankrollAlert(currentBankroll, initialBankroll);
+
+      // Checa stop loss se for perda
+      if (profit < 0) {
+        // Calcula perda do dia
+        const today = new Date().toISOString().split("T")[0];
+        const todayResult = dailyResults.find((r) => r.date.split("T")[0] === today);
+        const dailyLoss = todayResult ? Math.abs(Math.min(0, todayResult.totalProfit)) : Math.abs(profit);
+        checkStopLoss(dailyLoss);
+      }
+
       setProfitAmount("");
       setIsProfit(true);
       setSelectedLive("11h");

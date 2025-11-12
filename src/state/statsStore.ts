@@ -7,7 +7,7 @@ export interface AnalysisResult {
   id: string;
   date: string;
   imageUri: string;
-  score: "alavancar" | "bom" | "fraco";
+  score: "alavancar" | "bom" | "ruim";
   wasFollowed?: boolean; // Se o usuário seguiu a entrada
   result?: "win" | "loss"; // Resultado da entrada
   profit?: number; // Lucro/perda da entrada

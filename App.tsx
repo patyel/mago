@@ -3,6 +3,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { useEffect } from "react";
+import * as Notifications from "expo-notifications";
+import { useSettingsStore } from "./src/state/settingsStore";
 
 /*
 IMPORTANT NOTICE: DO NOT REMOVE
@@ -26,6 +29,31 @@ const openai_api_key = Constants.expoConfig.extra.apikey;
 */
 
 export default function App() {
+  useEffect(() => {
+    // Pede permissão de notificações
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === "granted") {
+        // Agenda lembretes de live
+        const scheduleLiveReminders = useSettingsStore.getState().scheduleLiveReminders;
+        scheduleLiveReminders();
+      }
+    };
+
+    requestPermissions();
+
+    // Reseta stop loss a cada novo dia
+    const checkNewDay = () => {
+      const lastUsed = useSettingsStore.getState().settings.stopLossReached;
+      if (lastUsed) {
+        const resetStopLoss = useSettingsStore.getState().resetStopLoss;
+        resetStopLoss();
+      }
+    };
+
+    checkNewDay();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
