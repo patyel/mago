@@ -49,6 +49,7 @@ interface AllPatternInfo {
   positions: string;
   count: number;
   isActive: boolean; // Se está ativo agora (últimos 4)
+  justBroke: boolean; // Se acabou de quebrar (último número quebrou)
 }
 
 // Analisa TODOS os padrões de dúzias na foto
@@ -80,12 +81,36 @@ const analyzeAllDozenPatterns = (results: RouletteResult[]): AllPatternInfo[] =>
     const isActive =
       last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.dozen as number));
 
-    if (countFromEnd > 0) {
+    // Verifica se acabou de quebrar (tinha padrão mas o último número quebrou)
+    const lastNumber = results[results.length - 1];
+    const secondToLast = results.length >= 2 ? results[results.length - 2] : null;
+
+    // Pega últimos 5 não-zero (se existirem)
+    const last5NonZero = results
+      .slice(-12)
+      .filter((r) => r.dozen !== null)
+      .slice(-5);
+
+    // Quebra = o último NÃO está no padrão, mas os 4 anteriores estavam
+    let justBroke = false;
+    if (last5NonZero.length >= 5) {
+      const lastDozen = last5NonZero[4].dozen;
+      const previous4 = last5NonZero.slice(0, 4);
+      const previous4InPattern = previous4.every((r) => pair.includes(r.dozen as number));
+      const lastNotInPattern = lastDozen !== null && !pair.includes(lastDozen);
+
+      if (previous4InPattern && lastNotInPattern && previous4.length >= 4) {
+        justBroke = true;
+      }
+    }
+
+    if (countFromEnd > 0 || justBroke) {
       allPatterns.push({
         type: "dozen",
         positions: name,
         count: countFromEnd,
         isActive,
+        justBroke,
       });
     }
   }
@@ -122,12 +147,33 @@ const analyzeAllColumnPatterns = (results: RouletteResult[]): AllPatternInfo[] =
     const isActive =
       last4NonZero.length >= 4 && last4NonZero.every((r) => pair.includes(r.column as number));
 
-    if (countFromEnd > 0) {
+    // Verifica se acabou de quebrar (tinha padrão mas o último número quebrou)
+    // Pega últimos 5 não-zero (se existirem)
+    const last5NonZero = results
+      .slice(-12)
+      .filter((r) => r.column !== null)
+      .slice(-5);
+
+    // Quebra = o último NÃO está no padrão, mas os 4 anteriores estavam
+    let justBroke = false;
+    if (last5NonZero.length >= 5) {
+      const lastColumn = last5NonZero[4].column;
+      const previous4 = last5NonZero.slice(0, 4);
+      const previous4InPattern = previous4.every((r) => pair.includes(r.column as number));
+      const lastNotInPattern = lastColumn !== null && !pair.includes(lastColumn);
+
+      if (previous4InPattern && lastNotInPattern && previous4.length >= 4) {
+        justBroke = true;
+      }
+    }
+
+    if (countFromEnd > 0 || justBroke) {
       allPatterns.push({
         type: "column",
         positions: name,
         count: countFromEnd,
         isActive,
+        justBroke,
       });
     }
   }
@@ -152,6 +198,12 @@ export const analyzeRouletteResults = (
 
   console.log("📊 Padrões de Dúzias encontrados:", allDozenPatterns);
   console.log("📊 Padrões de Colunas encontrados:", allColumnPatterns);
+
+  // Verifica se algum padrão acabou de quebrar
+  const hasBreak = [...allDozenPatterns, ...allColumnPatterns].some((p) => p.justBroke);
+  if (hasBreak) {
+    console.log("🔴 ATENÇÃO: Padrão acabou de quebrar!");
+  }
 
   const allPatterns: SequencePattern[] = [];
   const opportunities: RouletteOpportunity[] = [];
@@ -216,17 +268,58 @@ export const analyzeRouletteResults = (
 
   // Monta relatório de TODOS os padrões
   const allPatternsReport: string[] = [];
+  let hasRecentBreak = false;
+  const brokenPatterns: string[] = [];
 
   // Adiciona padrões de dúzias
   for (const p of allDozenPatterns) {
-    const status = p.isActive && p.count >= 4 ? "✅ ATIVO" : p.count < 4 ? "⏳ Fraco" : "❌ Quebrou";
+    let status = "";
+    if (p.justBroke) {
+      status = "🔴 QUEBROU AGORA!";
+      hasRecentBreak = true;
+      brokenPatterns.push(`Dúzia ${p.positions}`);
+    } else if (p.isActive && p.count >= 4) {
+      status = "✅ ATIVO";
+    } else if (p.count < 4) {
+      status = "⏳ Fraco";
+    } else {
+      status = "❌ Quebrou";
+    }
     allPatternsReport.push(`Dúzia ${p.positions}: ${p.count}x ${status}`);
   }
 
   // Adiciona padrões de colunas
   for (const p of allColumnPatterns) {
-    const status = p.isActive && p.count >= 4 ? "✅ ATIVO" : p.count < 4 ? "⏳ Fraco" : "❌ Quebrou";
+    let status = "";
+    if (p.justBroke) {
+      status = "🔴 QUEBROU AGORA!";
+      hasRecentBreak = true;
+      brokenPatterns.push(`Coluna ${p.positions}`);
+    } else if (p.isActive && p.count >= 4) {
+      status = "✅ ATIVO";
+    } else if (p.count < 4) {
+      status = "⏳ Fraco";
+    } else {
+      status = "❌ Quebrou";
+    }
     allPatternsReport.push(`Coluna ${p.positions}: ${p.count}x ${status}`);
+  }
+
+  // Se teve quebra recente, NÃO ENTRAR!
+  if (hasRecentBreak) {
+    overallScore = "ruim";
+    recommendation = `⚠️ PADRÃO ACABOU DE QUEBRAR!\n\n${brokenPatterns.join(", ")} quebrou agora no último número!\n\n⏳ AGUARDE! Espere para ver:\n• Se o padrão antigo volta\n• Ou se um novo padrão se forma\n\n📊 TODOS OS PADRÕES:\n${allPatternsReport.join("\n")}`;
+
+    return {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      imageUri,
+      detectedNumbers: results,
+      patterns: allPatterns,
+      opportunities: [], // Não retorna oportunidades se quebrou
+      overallScore,
+      recommendation,
+    };
   }
 
   if (opportunities.length === 0) {
