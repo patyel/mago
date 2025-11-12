@@ -44,9 +44,15 @@ const HomeScreen = () => {
     navigation.replace("Activation");
   };
 
+  const handleSair = () => {
+    // Limpa o código e volta para onboarding
+    clearCodigo();
+    navigation.replace("Onboarding");
+  };
+
   return (
-    <View className="flex-1 bg-casino-black-950">
-      <LinearGradient colors={["#0a0a0a", "#171717"]} style={{ flex: 1 }}>
+    <View className="flex-1 bg-slate-950">
+      <LinearGradient colors={["#0f172a", "#1e293b"]} style={{ flex: 1 }}>
         <SafeAreaView className="flex-1">
           <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
             {/* Header */}
@@ -54,29 +60,36 @@ const HomeScreen = () => {
               <View className="flex-row items-center justify-between mb-4">
                 <View className="flex-1 mr-4">
                   <View className="flex-row items-center mb-2">
-                    <View className="w-10 h-10 bg-casino-red-600 rounded-xl items-center justify-center mr-2">
+                    <View className="w-10 h-10 bg-purple-600 rounded-xl items-center justify-center mr-2">
                       <Ionicons name="sparkles" size={24} color="white" />
                     </View>
                     <Text className="text-4xl font-black text-white">App do Mago</Text>
                   </View>
-                  <Text className="text-casino-gold-400 text-base font-semibold">
+                  <Text className="text-purple-300 text-base font-semibold">
                     ✨ A IA que trabalha pra você
                   </Text>
                 </View>
                 <View className="flex-row gap-3">
                   <Pressable
                     onPress={() => navigation.navigate("Onboarding")}
-                    className="bg-casino-black-800/80 rounded-2xl items-center justify-center active:opacity-70 border-2 border-casino-red-600 px-4 py-3"
+                    className="bg-slate-800/80 rounded-2xl items-center justify-center active:opacity-70 border-2 border-purple-500 px-4 py-3"
                   >
-                    <Ionicons name="information-circle-outline" size={24} color="#ef4444" style={{ marginBottom: 4 }} />
+                    <Ionicons name="information-circle-outline" size={24} color="#a855f7" style={{ marginBottom: 4 }} />
                     <Text className="text-white text-xs font-bold">Info</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => navigation.navigate("History")}
-                    className="bg-gradient-to-br from-casino-red-600 to-casino-red-700 rounded-2xl items-center justify-center active:opacity-70 border-2 border-casino-gold-500 px-4 py-3"
+                    className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl items-center justify-center active:opacity-70 border-2 border-purple-400 px-4 py-3"
                   >
                     <Ionicons name="time" size={24} color="white" style={{ marginBottom: 4 }} />
                     <Text className="text-white text-xs font-bold">Histórico</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleSair}
+                    className="bg-red-600/80 rounded-2xl items-center justify-center active:opacity-70 border-2 border-red-500 px-4 py-3"
+                  >
+                    <Ionicons name="log-out-outline" size={24} color="white" style={{ marginBottom: 4 }} />
+                    <Text className="text-white text-xs font-bold">Sair</Text>
                   </Pressable>
                 </View>
               </View>

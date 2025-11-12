@@ -246,7 +246,9 @@ O app requer:
 
 ## 🎯 Melhorias Recentes
 
-### 🔧 Melhorias de UX (v4.1)
+### 🔧 Melhorias de UX (v4.2)
+- **Botão de Sair**: Adicionado botão vermelho "Sair" no header da tela principal para deslogar e voltar para tela de código
+- **Nomes de estratégias atualizados**: "Implacável" → "Mago Supremo" e "Visionário" → "Feiticeiro da Roleta"
 - **Navegação inteligente**: Ao clicar em "Começar a Magia" no onboarding, usuários já ativados vão direto para o app (não precisam inserir código novamente)
 - **Botão de compra**: Adicionado botão verde "Comprar Acesso" na tela de ativação que leva direto ao link de pagamento
 - **Email atualizado**: Email de contato atualizado para hallefpatyel1@hotmail.com

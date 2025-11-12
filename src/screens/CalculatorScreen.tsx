@@ -63,9 +63,9 @@ export default function CalculatorScreen() {
           totalPerEntry: totalBet,
           description:
             entries === 1
-              ? "Implacável"
+              ? "Mago Supremo"
               : entries === 2
-                ? "Visionário"
+                ? "Feiticeiro da Roleta"
                 : entries === 5
                   ? "Conservador"
                   : "Muito Conservador",
